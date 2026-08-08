@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: cinemaseat
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cinemaseat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  gateway:
+    image: asifmahmoud414/mock-gateway:latest
+    ports:
+      - "9000:9000"
+
+volumes:
+  postgres_data:
