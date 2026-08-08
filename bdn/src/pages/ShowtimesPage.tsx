@@ -91,8 +91,8 @@ export const ShowtimesPage: React.FC = () => {
                   <div className="flex items-start gap-4">
                     {/* Time Box */}
                     <div className="w-20 py-2.5 rounded-lg bg-red-950/40 border border-red-800/60 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-base font-bold text-red-400 font-mono">{formatTime(st.startTime)}</span>
-                      <span className="text-[10px] text-red-500 uppercase tracking-wider font-mono font-bold">
+                      <span className="text-base font-bold text-red-400">{formatTime(st.startTime)}</span>
+                      <span className="text-[10px] text-red-400 uppercase tracking-wider font-semibold">
                         {st.format}
                       </span>
                     </div>
@@ -106,14 +106,14 @@ export const ShowtimesPage: React.FC = () => {
                         </Badge>
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs text-neutral-400 font-mono">
+                      <div className="flex items-center gap-4 text-xs text-neutral-300">
                         <span className="flex items-center gap-1">
-                          <Monitor className="w-3.5 h-3.5 text-neutral-500" /> {st.format}
+                          <Monitor className="w-3.5 h-3.5 text-neutral-400" /> {st.format}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5 text-neutral-500" />
-                          <span className={isLowAvailability ? 'text-amber-400 font-bold' : 'text-neutral-300'}>
-                            {st.availableSeatsCount} seats left
+                          <Users className="w-3.5 h-3.5 text-neutral-400" />
+                          <span className={isLowAvailability ? 'text-amber-400 font-bold' : 'text-neutral-300 font-medium'}>
+                            {st.availableSeatsCount} seats available
                           </span>
                         </span>
                       </div>
@@ -123,8 +123,8 @@ export const ShowtimesPage: React.FC = () => {
                   {/* Pricing & CTA */}
                   <div className="flex items-center justify-between sm:justify-end gap-4 pt-3 sm:pt-0 border-t sm:border-t-0 border-neutral-800">
                     <div className="text-left sm:text-right">
-                      <span className="text-[10px] text-neutral-500 uppercase font-mono block">Ticket Price</span>
-                      <span className="text-base font-bold text-white font-mono">{formatCurrency(st.priceUSD)}</span>
+                      <span className="text-[11px] text-neutral-400 uppercase font-semibold block">Ticket Price</span>
+                      <span className="text-base font-bold text-white">{formatCurrency(st.priceUSD)}</span>
                     </div>
 
                     <Link to={`/shows/${st.id}/seats`}>

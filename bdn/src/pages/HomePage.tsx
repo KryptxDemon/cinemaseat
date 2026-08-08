@@ -123,40 +123,40 @@ export const HomePage: React.FC = () => {
                   </div>
 
                   <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs text-white font-medium">
-                    <span className="flex items-center gap-1 font-mono text-[11px] bg-neutral-950/80 px-2 py-0.5 rounded border border-neutral-800 backdrop-blur-xs">
-                      <Clock className="w-3 h-3 text-neutral-400" /> {formatDuration(movie.durationMinutes)}
+                    <span className="flex items-center gap-1 text-xs bg-neutral-950/80 px-2 py-1 rounded border border-neutral-800 backdrop-blur-xs">
+                      <Clock className="w-3.5 h-3.5 text-neutral-400" /> {formatDuration(movie.durationMinutes)}
                     </span>
-                    <span className="font-mono text-[11px] bg-neutral-950/80 px-2 py-0.5 rounded border border-neutral-800 backdrop-blur-xs">
+                    <span className="text-xs bg-neutral-950/80 px-2 py-1 rounded border border-neutral-800 backdrop-blur-xs font-semibold">
                       {movie.releaseYear}
                     </span>
                   </div>
                 </div>
 
                 <CardHeader className="pb-2">
-                  <div className="flex flex-wrap gap-1 mb-1.5">
+                  <div className="flex flex-wrap gap-1.5 mb-2">
                     {movie.genres.map((g) => (
                       <span
                         key={g}
-                        className="text-[10px] uppercase tracking-wider font-mono text-red-400 bg-red-950/40 border border-red-800/50 px-1.5 py-0.5 rounded"
+                        className="text-xs font-semibold uppercase tracking-wider text-red-400 bg-red-950/40 border border-red-800/50 px-2 py-0.5 rounded"
                       >
                         {g}
                       </span>
                     ))}
                   </div>
-                  <CardTitle className="text-white">{movie.title}</CardTitle>
-                  <CardDescription className="line-clamp-2 mt-1 text-neutral-400">{movie.synopsis}</CardDescription>
+                  <CardTitle className="text-white text-lg">{movie.title}</CardTitle>
+                  <CardDescription className="line-clamp-2 mt-1 text-neutral-300 text-xs leading-relaxed">{movie.synopsis}</CardDescription>
                 </CardHeader>
 
-                <CardContent className="mt-auto pt-2 text-xs text-neutral-400 space-y-1">
+                <CardContent className="mt-auto pt-2 text-xs text-neutral-300 space-y-1">
                   <div>
-                    <span className="text-neutral-500">Director:</span>{' '}
-                    <span className="text-neutral-300 font-medium">{movie.director}</span>
+                    <span className="text-neutral-400">Director:</span>{' '}
+                    <span className="text-neutral-200 font-semibold">{movie.director}</span>
                   </div>
                 </CardContent>
 
                 <CardFooter className="border-t border-neutral-800/80 pt-4 mt-2">
-                  <span className="text-xs text-neutral-400 font-mono">
-                    From <span className="text-emerald-400 font-bold">{formatCurrency(14.5)}</span>
+                  <span className="text-xs text-neutral-300 font-medium">
+                    From <span className="text-emerald-400 font-bold">{formatCurrency(400)}</span>
                   </span>
                   <Link to={`/movies/${movie.id}`}>
                     <Button variant="primary" size="sm" icon={<Calendar className="w-3.5 h-3.5" />}>

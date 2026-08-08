@@ -22,10 +22,10 @@ export const ShowtimeCard: React.FC<ShowtimeCardProps> = ({ showtime, showTheatr
         <div className="flex items-center gap-3.5 sm:gap-4">
           {/* Showtime Box */}
           <div className="w-20 sm:w-24 py-2.5 px-1.5 rounded-lg bg-red-950/40 border border-red-800/60 flex flex-col items-center justify-center shrink-0 shadow-sm">
-            <span className="text-base sm:text-lg font-black text-red-400 font-mono leading-none">
+            <span className="text-base sm:text-lg font-bold text-red-400 leading-none">
               {formatTime(showtime.startTime)}
             </span>
-            <span className="text-[9px] text-red-500 uppercase tracking-widest font-mono font-bold mt-1">
+            <span className="text-[10px] text-red-400 uppercase tracking-wider font-semibold mt-1">
               {showtime.format}
             </span>
           </div>
@@ -38,13 +38,13 @@ export const ShowtimeCard: React.FC<ShowtimeCardProps> = ({ showtime, showTheatr
               </h4>
             )}
 
-            <div className="flex items-center gap-2 flex-wrap text-xs text-neutral-400 font-mono">
-              <span className="px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-700/80 font-medium">
+            <div className="flex items-center gap-2 flex-wrap text-xs text-neutral-300">
+              <span className="px-2 py-0.5 rounded bg-neutral-800 text-neutral-200 border border-neutral-700/80 font-medium">
                 {showtime.format}
               </span>
               <span className="text-neutral-600">•</span>
-              <span className={isLowAvailability ? 'text-amber-400 font-bold' : 'text-neutral-400'}>
-                {showtime.availableSeatsCount} seats left
+              <span className={isLowAvailability ? 'text-amber-400 font-bold' : 'text-neutral-300 font-medium'}>
+                {showtime.availableSeatsCount} seats available
               </span>
             </div>
           </div>
@@ -53,8 +53,8 @@ export const ShowtimeCard: React.FC<ShowtimeCardProps> = ({ showtime, showTheatr
         {/* Right Section: How Much & Action */}
         <div className="flex items-center justify-between sm:justify-end gap-4 pt-3 sm:pt-0 border-t sm:border-t-0 border-neutral-800/80">
           <div className="text-left sm:text-right">
-            <span className="text-[10px] text-neutral-500 uppercase font-mono block">Ticket</span>
-            <span className="text-base font-extrabold text-white font-mono leading-none">
+            <span className="text-[11px] text-neutral-400 uppercase font-semibold block">Ticket</span>
+            <span className="text-base font-bold text-white leading-none">
               {formatCurrency(showtime.priceUSD)}
             </span>
           </div>

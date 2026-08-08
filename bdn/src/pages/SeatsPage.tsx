@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Film, Clock, RefreshCw, ShieldCheck, Star } from 'lucide-react';
-import { fetchSeatsByShowId } from '../api/seats';
+import { fetchSeatsByShowId, updateMockSeatStatuses } from '../api/seats';
 import { createSeatHold } from '../api/holds';
 import { SeatMapData, Seat as SeatType, HoldResponse } from '../types/seat';
 import { useAsync } from '../hooks/useAsync';
@@ -65,6 +65,25 @@ export const SeatsPage: React.FC = () => {
     }
   }, [showId]);
 
+  // Cancel hold and release held seats explicitly
+  const handleCancelHold = useCallback(() => {
+    if (!showId) return;
+
+    if (heldSeatIds.length > 0) {
+      updateMockSeatStatuses(showId, heldSeatIds, 'available');
+    }
+
+    const storageKey = `cinemaseat_hold_${showId}`;
+    sessionStorage.removeItem(storageKey);
+
+    setHoldData(null);
+    setHeldSeatIds([]);
+    setSelectedSeatIds([]);
+    setHoldError(null);
+
+    refetch();
+  }, [showId, heldSeatIds, refetch]);
+
   // Callback triggered when hold timer reaches zero
   const handleHoldExpired = useCallback(() => {
     if (!showId) return;
@@ -83,7 +102,7 @@ export const SeatsPage: React.FC = () => {
 
   // Toggle seat selection (Local state ONLY)
   const handleToggleSeat = (seat: SeatType) => {
-    // If user already has an active hold, don't allow modifying until released or reset
+    // If user already has an active hold and clicks a seat, ask or allow canceling hold first
     if (holdData) return;
 
     setHoldError(null);
@@ -217,7 +236,7 @@ export const SeatsPage: React.FC = () => {
                 </Badge>
               </div>
 
-              <div className="flex items-center gap-2 text-xs font-mono text-neutral-300">
+              <div className="flex items-center gap-2 text-xs text-neutral-300 font-medium flex-wrap">
                 <span className="font-bold text-white">{show.hallName}</span>
                 <span className="text-neutral-600">•</span>
                 <span className="text-red-400 font-bold">{show.startTime}</span>
@@ -229,8 +248,8 @@ export const SeatsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="text-left md:text-right font-mono text-xs text-neutral-400 border-t md:border-t-0 pt-3 md:pt-0 border-neutral-800 w-full md:w-auto">
-            <span className="text-neutral-500 block text-[10px] uppercase">Screen Spec</span>
+          <div className="text-left md:text-right text-xs text-neutral-400 border-t md:border-t-0 pt-3 md:pt-0 border-neutral-800 w-full md:w-auto">
+            <span className="text-neutral-500 block text-[10px] uppercase font-semibold">Screen Spec</span>
             <span className="text-neutral-200 font-semibold">{show.screenInfo || show.format}</span>
           </div>
         </div>
@@ -245,7 +264,7 @@ export const SeatsPage: React.FC = () => {
             selectedSeatIds={selectedSeatIds}
             heldSeatIds={heldSeatIds}
             onToggleSeat={handleToggleSeat}
-            disabled={isHolding || holdData !== null}
+            disabled={isHolding}
           />
         </div>
 
@@ -260,6 +279,7 @@ export const SeatsPage: React.FC = () => {
             onHoldSeats={handleHoldSeats}
             onProceedToPayment={handleProceedToPayment}
             onHoldExpired={handleHoldExpired}
+            onCancelHold={handleCancelHold}
             error={holdError}
           />
         </div>

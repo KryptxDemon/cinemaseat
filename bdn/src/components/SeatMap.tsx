@@ -40,7 +40,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({
           <div className="h-2.5 w-full bg-gradient-to-r from-red-600/20 via-red-500 to-red-600/20 rounded-t-[100%] border-t-2 border-red-500 shadow-[0_-8px_24px_rgba(229,9,20,0.4)]" />
           <div className="absolute inset-0 bg-gradient-to-b from-red-500/10 to-transparent pointer-events-none blur-sm h-12" />
         </div>
-        <span className="text-[11px] uppercase tracking-[0.2em] font-mono font-black text-neutral-400 block pt-1">
+        <span className="text-xs uppercase tracking-[0.2em] font-bold text-neutral-400 block pt-1">
           CINEMA SCREEN
         </span>
       </div>
@@ -55,12 +55,9 @@ export const SeatMap: React.FC<SeatMapProps> = ({
             return (
               <div key={rowLetter} className="flex items-center justify-between gap-2 sm:gap-3">
                 {/* Left Row Label */}
-                <div className="w-6 sm:w-8 flex flex-col items-center justify-center shrink-0">
-                  <span className="text-xs sm:text-sm font-mono font-bold text-neutral-400">
+                <div className="w-6 sm:w-8 flex items-center justify-center shrink-0">
+                  <span className="text-xs sm:text-sm font-bold text-neutral-400">
                     {rowLetter}
-                  </span>
-                  <span className="text-[8px] font-mono text-neutral-600 uppercase">
-                    {tier === 'vip' ? 'VIP' : tier === 'premium' ? 'PREM' : 'STD'}
                   </span>
                 </div>
 
@@ -93,12 +90,9 @@ export const SeatMap: React.FC<SeatMapProps> = ({
                 </div>
 
                 {/* Right Row Label */}
-                <div className="w-6 sm:w-8 flex flex-col items-center justify-center shrink-0">
-                  <span className="text-xs sm:text-sm font-mono font-bold text-neutral-400">
+                <div className="w-6 sm:w-8 flex items-center justify-center shrink-0">
+                  <span className="text-xs sm:text-sm font-bold text-neutral-400">
                     {rowLetter}
-                  </span>
-                  <span className="text-[8px] font-mono text-neutral-600 uppercase">
-                    {tier === 'vip' ? 'VIP' : tier === 'premium' ? 'PREM' : 'STD'}
                   </span>
                 </div>
               </div>
@@ -107,41 +101,27 @@ export const SeatMap: React.FC<SeatMapProps> = ({
         </div>
       </div>
 
-      {/* Visually Obvious Legend */}
+      {/* Visually Obvious & Simplified Legend */}
       <div className="pt-6 border-t border-neutral-800/80">
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-mono text-neutral-300">
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs sm:text-sm font-medium text-neutral-300">
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 rounded bg-neutral-900 border border-neutral-700" />
             <span>Available</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-[#E50914] border border-red-400 shadow-sm shadow-red-900/50" />
+            <span className="w-4 h-4 rounded bg-[#E50914] border border-red-400" />
             <span className="font-bold text-white">Selected</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-amber-950/80 border border-amber-600 flex items-center justify-center text-amber-400">
-              <Lock className="w-2.5 h-2.5" />
-            </span>
-            <span className="text-amber-400 font-medium">Held (Locked)</span>
+            <span className="w-4 h-4 rounded bg-amber-600 border border-amber-400" />
+            <span className="text-amber-300 font-semibold">Held (Locked)</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-neutral-900/90 border border-neutral-800 flex items-center justify-center text-neutral-600 opacity-60">
-              <ShieldAlert className="w-2.5 h-2.5" />
-            </span>
+            <span className="w-4 h-4 rounded bg-neutral-900 border border-neutral-800 opacity-50" />
             <span className="text-neutral-500">Booked</span>
-          </div>
-
-          <div className="flex items-center gap-2 border-l border-neutral-800 pl-4">
-            <span className="w-3 h-3 rounded-full bg-indigo-500" />
-            <span className="text-indigo-300">Premium (+$2.50)</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-amber-400" />
-            <span className="text-amber-300">VIP Recline (+$5.00)</span>
           </div>
         </div>
       </div>

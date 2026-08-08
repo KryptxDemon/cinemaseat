@@ -58,15 +58,15 @@ export const HoldTimer: React.FC<HoldTimerProps> = ({
   if (compact) {
     return (
       <span
-        className={`font-mono font-black text-xs inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border transition-colors ${
+        className={`font-semibold text-xs inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-colors ${
           isCriticalTime
-            ? 'bg-red-950/90 text-red-400 border-red-800 animate-pulse'
+            ? 'bg-red-950/90 text-red-300 border-red-800 animate-pulse'
             : isLowTime
-            ? 'bg-amber-950/90 text-amber-400 border-amber-800'
-            : 'bg-emerald-950/90 text-emerald-400 border-emerald-800'
+            ? 'bg-amber-950/90 text-amber-300 border-amber-800'
+            : 'bg-emerald-950/90 text-emerald-300 border-emerald-800'
         } ${className}`}
       >
-        <Clock className={`w-3 h-3 shrink-0 ${isCriticalTime ? 'animate-pulse' : ''}`} />
+        <Clock className={`w-3.5 h-3.5 shrink-0 ${isCriticalTime ? 'animate-pulse' : ''}`} />
         <span>Seat held · {formatTime(secondsLeft)} remaining</span>
       </span>
     );
@@ -93,7 +93,7 @@ export const HoldTimer: React.FC<HoldTimerProps> = ({
           ) : (
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
           )}
-          <span className="text-xs font-bold font-mono">
+          <span className="text-xs font-bold">
             {isCriticalTime
               ? 'Hold Expiring Soon!'
               : isLowTime
@@ -102,7 +102,7 @@ export const HoldTimer: React.FC<HoldTimerProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 font-mono">
+        <div className="flex items-center gap-1.5">
           <Clock
             className={`w-4 h-4 ${
               isCriticalTime
@@ -113,7 +113,7 @@ export const HoldTimer: React.FC<HoldTimerProps> = ({
             }`}
           />
           <span
-            className={`text-sm font-black tracking-wider ${
+            className={`text-sm font-bold tracking-wider ${
               isCriticalTime
                 ? 'text-red-400'
                 : isLowTime
@@ -126,9 +126,9 @@ export const HoldTimer: React.FC<HoldTimerProps> = ({
         </div>
       </div>
 
-      <p className="text-[10px] text-neutral-400 font-mono mt-1">
+      <p className="text-xs text-neutral-300 mt-1">
         {secondsLeft > 0
-          ? `Seat held · ${formatTime(secondsLeft)} remaining to complete payment`
+          ? `Seats locked for ${formatTime(secondsLeft)} while you complete payment`
           : 'Seat hold expired'}
       </p>
     </div>

@@ -124,7 +124,7 @@ export const MovieDetailsPage: React.FC = () => {
               <Badge variant="primary" size="sm" className="bg-red-600 text-white font-bold">
                 {movie.ageRating}
               </Badge>
-              <div className="flex items-center gap-1 text-xs text-amber-400 font-mono bg-black/60 px-2 py-0.5 rounded border border-neutral-800">
+              <div className="flex items-center gap-1 text-xs text-amber-400 font-semibold bg-black/60 px-2.5 py-1 rounded border border-neutral-800">
                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                 <span>{movie.rating.toFixed(1)}</span>
               </div>
@@ -134,7 +134,7 @@ export const MovieDetailsPage: React.FC = () => {
               {movie.title}
             </h1>
 
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-mono text-neutral-300">
+            <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-neutral-300">
               <span className="font-semibold text-white">{formatDuration(movie.durationMinutes)}</span>
               <span className="text-neutral-600">•</span>
               <span className="text-neutral-300">{movie.genres.join(' / ')}</span>
@@ -154,25 +154,25 @@ export const MovieDetailsPage: React.FC = () => {
         {/* Date Selector Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-800">
           <div>
-            <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
               Available Theatres & Showtimes
             </h2>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-neutral-300">
               Select a screening time to reserve seats
             </p>
           </div>
 
           {/* Date Picker Buttons */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-            <span className="text-xs font-mono text-neutral-400 flex items-center gap-1 shrink-0 mr-1">
-              <Calendar className="w-3.5 h-3.5 text-neutral-500" /> Date:
+            <span className="text-xs text-neutral-300 font-medium flex items-center gap-1 shrink-0 mr-1">
+              <Calendar className="w-3.5 h-3.5 text-neutral-400" /> Date:
             </span>
             {dates.map((d) => (
               <button
                 key={d.value}
                 onClick={() => setSelectedDate(d.value)}
-                className={`px-3.5 py-1.5 text-xs font-mono font-medium rounded-lg transition-all cursor-pointer border whitespace-nowrap ${
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer border whitespace-nowrap ${
                   selectedDate === d.value
                     ? 'bg-red-600 text-white border-red-500 font-bold shadow-md shadow-red-950/50'
                     : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800'

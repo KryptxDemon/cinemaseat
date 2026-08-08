@@ -16,6 +16,7 @@ function generateMockSeatMap(showId: string): SeatMapData {
   const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
   const seatsPerRow = 12;
   const aisleAfterNumber = [3, 9];
+  const totalSeats = rows.length * seatsPerRow; // 72 total seats
 
   const show: ShowDetails = {
     id: showtime.id,
@@ -33,37 +34,40 @@ function generateMockSeatMap(showId: string): SeatMapData {
   };
 
   const seats: Seat[] = [];
+  const targetAvailableCount = Math.min(totalSeats, Math.max(0, showtime.availableSeatsCount));
+  const targetBookedCount = totalSeats - targetAvailableCount;
 
+  // Deterministically select indices to mark as booked based on showtime ID hash
+  const bookedIndices = new Set<number>();
+  let hash = 0;
+  for (let i = 0; i < showId.length; i++) {
+    hash = (hash << 5) - hash + showId.charCodeAt(i);
+    hash |= 0;
+  }
+
+  let attempt = 0;
+  while (bookedIndices.size < targetBookedCount && attempt < totalSeats * 2) {
+    const idx = Math.abs((hash + attempt * 17 + attempt * attempt) % totalSeats);
+    bookedIndices.add(idx);
+    attempt++;
+  }
+
+  let globalIndex = 0;
   rows.forEach((row) => {
     let tier: SeatTier = 'standard';
     let tierExtra = 0;
 
     if (row === 'C' || row === 'D') {
       tier = 'premium';
-      tierExtra = 2.5;
+      tierExtra = 100;
     } else if (row === 'E' || row === 'F') {
       tier = 'vip';
-      tierExtra = 5.0;
+      tierExtra = 200;
     }
 
     for (let num = 1; num <= seatsPerRow; num++) {
       const seatId = `${showId}-${row}${num}`;
-
-      let status: 'available' | 'booked' | 'held' = 'available';
-
-      // Example pre-booked seats for realistic layout
-      if (
-        (row === 'C' && (num === 6 || num === 7)) ||
-        (row === 'D' && (num === 5 || num === 6 || num === 7 || num === 8)) ||
-        (row === 'B' && num === 3)
-      ) {
-        status = 'booked';
-      }
-
-      // Example pre-held seats
-      if ((row === 'E' && num === 6) || (row === 'A' && num === 11)) {
-        status = 'held';
-      }
+      const isBooked = bookedIndices.has(globalIndex);
 
       seats.push({
         id: seatId,
@@ -71,8 +75,10 @@ function generateMockSeatMap(showId: string): SeatMapData {
         number: num,
         tier,
         priceUSD: Number((showtime.priceUSD + tierExtra).toFixed(2)),
-        status,
+        status: isBooked ? 'booked' : 'available',
       });
+
+      globalIndex++;
     }
   });
 
@@ -83,6 +89,10 @@ function generateMockSeatMap(showId: string): SeatMapData {
     aisleAfterNumber,
     seats,
   };
+
+  // Ensure showtime.availableSeatsCount matches the actual generated count
+  const actualAvailable = seats.filter((s) => s.status === 'available').length;
+  showtime.availableSeatsCount = actualAvailable;
 
   mockSeatStore[showId] = seatMapData;
   return seatMapData;
@@ -104,6 +114,13 @@ export function updateMockSeatStatuses(
     }
     return seat;
   });
+
+  // Keep availableSeatsCount in showtime and map data synchronized
+  const actualAvailable = mapData.seats.filter((s) => s.status === 'available').length;
+  const showtime = MOCK_SHOWTIMES.find((s) => s.id === showId);
+  if (showtime) {
+    showtime.availableSeatsCount = actualAvailable;
+  }
 }
 
 /**

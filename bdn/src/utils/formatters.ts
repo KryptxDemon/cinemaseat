@@ -2,12 +2,9 @@
  * Formatting utilities for CinemaSeat
  */
 
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-  }).format(amount);
+export function formatCurrency(amount: number, _currency = 'BDT'): string {
+  const formattedAmount = Math.round(amount).toLocaleString('en-US');
+  return `৳${formattedAmount}`;
 }
 
 export function formatDuration(minutes: number): string {

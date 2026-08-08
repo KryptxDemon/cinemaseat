@@ -181,7 +181,7 @@ export const PaymentPage: React.FC = () => {
         <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
           Checkout & Payment
         </h1>
-        <p className="text-xs text-neutral-400 font-mono">
+        <p className="text-xs text-neutral-300">
           Confirm your cinema seats and authorize payment.
         </p>
       </div>
@@ -207,38 +207,38 @@ export const PaymentPage: React.FC = () => {
                   <Badge variant="primary" size="sm" className="bg-red-600 text-white font-bold">
                     {format || 'Standard'}
                   </Badge>
-                  <span className="text-xs font-mono text-neutral-400">Locked Seats</span>
+                  <span className="text-xs font-semibold text-neutral-400">Locked Seats</span>
                 </div>
                 <CardTitle className="text-xl font-bold text-white pt-1">{movieTitle}</CardTitle>
               </CardHeader>
 
               <CardContent className="py-6 space-y-5">
                 {/* Details Grid */}
-                <div className="grid grid-cols-2 gap-4 text-xs font-mono">
+                <div className="grid grid-cols-2 gap-4 text-xs">
                   <div className="p-3.5 rounded-xl bg-neutral-950/80 border border-neutral-800 space-y-1">
-                    <span className="text-[10px] text-neutral-500 uppercase block">Theatre & Hall</span>
+                    <span className="text-[11px] text-neutral-400 uppercase font-semibold block">Theatre & Hall</span>
                     <span className="font-bold text-white text-sm block">{hallName}</span>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-neutral-950/80 border border-neutral-800 space-y-1">
-                    <span className="text-[10px] text-neutral-500 uppercase block">Showtime</span>
+                    <span className="text-[11px] text-neutral-400 uppercase font-semibold block">Showtime</span>
                     <span className="font-bold text-red-400 text-sm block">{showtime} • {date}</span>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-neutral-950/80 border border-neutral-800 space-y-1">
-                    <span className="text-[10px] text-neutral-500 uppercase block">Seats</span>
-                    <span className="font-bold text-emerald-300 text-sm block">{seatsFormatted || hold.seatIds.join(', ')}</span>
+                    <span className="text-[11px] text-neutral-400 uppercase font-semibold block">Seats</span>
+                    <span className="font-bold text-amber-300 text-sm block">{seatsFormatted || hold.seatIds.join(', ')}</span>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-neutral-950/80 border border-neutral-800 space-y-1">
-                    <span className="text-[10px] text-neutral-500 uppercase block">Booking Reference</span>
+                    <span className="text-[11px] text-neutral-400 uppercase font-semibold block">Booking Reference</span>
                     <span className="font-bold text-neutral-300 text-xs truncate block">{hold.holdId}</span>
                   </div>
                 </div>
 
                 {/* Visible Hold Timer */}
                 <div className="pt-2">
-                  <span className="text-xs font-mono text-neutral-400 uppercase tracking-wider block mb-2">
+                  <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block mb-2">
                     Active Seat Reservation Timer
                   </span>
                   <HoldTimer
@@ -268,16 +268,13 @@ export const PaymentPage: React.FC = () => {
               <CardContent className="py-6 space-y-6">
                 {/* Amount Display */}
                 <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800/80 space-y-2">
-                  <span className="text-xs text-neutral-400 font-mono uppercase block">Total Payable Amount</span>
+                  <span className="text-xs text-neutral-400 font-semibold uppercase block">Total Payable Amount</span>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-3xl font-black text-white font-mono">
+                    <span className="text-3xl font-extrabold text-white">
                       {formatCurrency(hold.totalPriceUSD)}
                     </span>
-                    <span className="text-sm font-mono text-emerald-400 font-bold">
-                      ৳{amountBDT.toLocaleString()}
-                    </span>
                   </div>
-                  <p className="text-[10px] text-neutral-500 font-mono">
+                  <p className="text-xs text-neutral-400">
                     Includes screen charges, booking fees, and local taxes.
                   </p>
                 </div>
