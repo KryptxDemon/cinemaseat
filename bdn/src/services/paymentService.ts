@@ -13,13 +13,15 @@
  */
 
 import { apiRequest, ApiError } from './api';
-import { getBooking, BookingCustomer, BookingDetails } from './bookingService';
+import { getBooking, BookingDetails } from './bookingService';
 
 export type PaymentStatus = 'pending' | 'successful' | 'failed';
 
 export interface PaymentRequest {
   holdId: string;
-  customer: BookingCustomer;
+  name: string;
+  phone: string;
+  email: string;
   amountUSD?: number;
   paymentMethod?: string;
 }
@@ -38,11 +40,9 @@ export async function createPayment(req: PaymentRequest): Promise<PaymentRespons
     method: 'POST',
     body: {
       holdId: req.holdId,
-      customer: {
-        name: req.customer.name,
-        phone: req.customer.phone,
-        email: req.customer.email,
-      },
+      name: req.name,
+      phone: req.phone,
+      email: req.email,
       amountUSD: req.amountUSD,
       paymentMethod: req.paymentMethod ?? 'mock_gateway',
     },

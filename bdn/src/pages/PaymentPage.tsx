@@ -148,11 +148,9 @@ export const PaymentPage: React.FC = () => {
       const res = await createPayment({
         holdId,
         amountUSD: ctx.totalAmountUSD,
-        customer: {
-          name: customer.name.trim(),
-          phone: customer.phone.trim(),
-          email: customer.email.trim(),
-        },
+        name: customer.name.trim(),
+        phone: customer.phone.trim(),
+        email: customer.email.trim(),
       });
 
       // If backend already returns a final state, honor it.
