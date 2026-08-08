@@ -1,30 +1,13 @@
+# Frontend-only slice of the integration stack.
+#
+# This file is owned by the `frontend` branch. The full integration
+# stack (postgres + backend + gateway + frontend) lives on the
+# `devops` branch in devops/docker-compose.yml. See BRANCHES.md.
+#
+# Usage:
+#   docker compose -f frontend.docker-compose.yml up
+
 services:
-  postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: cinemaseat
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d cinemaseat"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  gateway:
-    image: asifmahmoud414/mock-gateway:latest
-    ports:
-      - "8080:8080"
-    environment:
-      # Adjust to point at your real backend when it exists.
-      - BACKEND_URL=http://host.docker.internal:8000
-    depends_on:
-      - postgres
-
   frontend:
     build:
       context: ./bdn
@@ -37,9 +20,10 @@ services:
     container_name: cinemaseat-frontend
     ports:
       - "3000:80"
-    depends_on:
-      - gateway
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
     restart: unless-stopped
-
-volumes:
-  postgres_data:
