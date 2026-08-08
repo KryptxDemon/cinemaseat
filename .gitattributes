@@ -1,0 +1,26 @@
+# Enforce LF line endings for shell scripts and other text
+# files that the Docker build copies into Linux images. Without
+# this, `core.autocrlf=true` on Windows rewrites the file on
+# checkout to CRLF and the shebang in /bin/sh fails with
+# "no such file or directory" because it ends up as
+# `#!/bin/sh\r`.
+#
+# Plain text files default to LF; Windows-only files stay CRLF.
+*               text=auto eol=lf
+*.sh            text eol=lf
+*.py            text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+*.md            text eol=lf
+*.json          text eol=lf
+*.cfg           text eol=lf
+*.ini           text eol=lf
+*.toml          text eol=lf
+*.tsx           text eol=lf
+*.ts            text eol=lf
+*.css           text eol=lf
+*.html          text eol=lf
+*.mako          text eol=lf
+Dockerfile      text eol=lf
+.gitattributes  text eol=lf
+.gitignore      text eol=lf
