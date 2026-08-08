@@ -1,0 +1,52 @@
+name: ci
+
+on:
+  push:
+    branches: [main, frontend, backend, devops]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend-build:
+    name: Frontend build + tsc
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bdn
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.x
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Type check
+        run: bunx tsc --noEmit
+      - name: Build
+        run: bun run build
+        env:
+          VITE_API_URL: http://localhost:8080
+
+  backend-build:
+    name: Backend import smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: pip install -r requirements.txt
+      - name: Import smoke test
+        run: python -c "from app.main import app; print(app.title)"
+
+  integration-compose:
+    name: docker compose config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate integration compose
+        run: docker compose -f devops/docker-compose.yml config --quiet
