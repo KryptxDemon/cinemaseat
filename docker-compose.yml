@@ -130,9 +130,11 @@ services:
       dockerfile: Dockerfile
       args:
         # Browser-side base URL. Baked into the JS bundle at build time.
-        # The SPA in the browser must reach the gateway via the HOST
-        # machine, not via Docker DNS — so this is `localhost`.
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+        # Default to a same-origin `/api` prefix so the SPA only ever
+        # talks to its own nginx, which reverse-proxies to the backend
+        # in the compose network. Override to an absolute URL only if
+        # the SPA is served from a different origin than the API.
+        VITE_API_URL: ${VITE_API_URL:-/api}
     image: cinemaseat/frontend:latest
     container_name: cinemaseat-frontend
     restart: unless-stopped
