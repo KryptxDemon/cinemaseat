@@ -18,8 +18,9 @@ export class HttpClient {
 
   constructor(baseUrl: string = '') {
     this.baseUrl = baseUrl;
-    // Client-side execution mode
-    this.isMockMode = true;
+    // Default to the real FastAPI backend. Mock mode is only used for
+    // local-only development if the backend is unreachable.
+    this.isMockMode = false;
   }
 
   /**

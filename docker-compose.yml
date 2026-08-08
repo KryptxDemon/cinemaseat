@@ -29,6 +29,10 @@ services:
     build:
       context: ./bdn
       dockerfile: Dockerfile
+      args:
+        # Browser-side base URL for the FastAPI gateway. Baked into
+        # the JS bundle at build time (Vite inlines import.meta.env).
+        VITE_API_URL: http://localhost:8080
     image: cinemaseat/frontend:latest
     container_name: cinemaseat-frontend
     ports:

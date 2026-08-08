@@ -13,12 +13,10 @@ import { Badge } from '../components/Badge';
 import { SeatMap } from '../components/SeatMap';
 import { BookingSummary } from '../components/BookingSummary';
 import { formatDuration } from '../utils/formatters';
-import { useAuth } from '../auth';
 
 export const SeatsPage: React.FC = () => {
   const { showId } = useParams<{ showId: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, login } = useAuth();
 
   // Local state for seat selection and hold confirmation
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
@@ -126,11 +124,6 @@ export const SeatsPage: React.FC = () => {
     setIsHolding(true);
     setHoldError(null);
 
-    // Ensure session has an active auth token attached
-    if (!isAuthenticated) {
-      await login('guest.viewer@cinemaseat.com');
-    }
-
     try {
       const response = await createSeatHold({
         showId,
@@ -144,8 +137,12 @@ export const SeatsPage: React.FC = () => {
       sessionStorage.setItem(`cinemaseat_hold_${showId}`, JSON.stringify(response));
     } catch (err: unknown) {
       // Hold failed (e.g. seat taken by another user)
+      const statusCode = (err as { statusCode?: number })?.statusCode;
       const errorMsg =
-        (err as { message?: string })?.message || 'This seat was just taken by another user.';
+        statusCode === 409
+          ? 'Sorry, this seat was just taken by another customer.'
+          : ((err as { message?: string })?.message ||
+            'Sorry, this seat was just taken by another customer.');
       setHoldError(errorMsg);
 
       // Reset selection and refresh seat map immediately to reflect latest backend truth
@@ -163,7 +160,18 @@ export const SeatsPage: React.FC = () => {
 
   const handleProceedToPayment = () => {
     if (!holdData) return;
-    navigate(`/payment/${holdData.holdId}`);
+    navigate(`/payment/${holdData.holdId}`, {
+      state: {
+        hold: holdData,
+        show,
+        heldSeats: heldSeats.map((s) => ({
+          id: s.id,
+          row: s.row,
+          number: s.number,
+          priceUSD: s.priceUSD,
+        })),
+      },
+    });
   };
 
   if (loading) {
