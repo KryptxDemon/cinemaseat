@@ -11,7 +11,7 @@ export interface BookingDetails {
   seatsFormatted: string;
   totalAmountUSD: number;
   totalAmountBDT?: number;
-  status: 'confirmed' | 'cancelled' | 'pending';
+  status: 'confirmed' | 'cancelled' | 'pending' | 'failed';
   createdAt: string;
   paymentRef?: string;
 }

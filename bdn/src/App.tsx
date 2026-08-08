@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Film, Server } from 'lucide-react';
 import { Navbar } from './components/Navbar';
-import { AuthProvider, ProtectedRoute } from './auth';
+import { AuthProvider } from './auth';
 import { MoviesPage } from './pages/MoviesPage';
 import { MovieDetailsPage } from './pages/MovieDetailsPage';
 import { ShowtimesPage } from './pages/ShowtimesPage';
@@ -32,19 +32,11 @@ export default function App() {
               {/* Protected Routes */}
               <Route
                 path="/payment/:bookingId"
-                element={
-                  <ProtectedRoute>
-                    <PaymentPage />
-                  </ProtectedRoute>
-                }
+                element={<PaymentPage />}
               />
               <Route
                 path="/booking/:bookingId"
-                element={
-                  <ProtectedRoute>
-                    <BookingPage />
-                  </ProtectedRoute>
-                }
+                element={<BookingPage />}
               />
 
               <Route path="*" element={<NotFoundPage />} />
