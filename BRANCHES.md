@@ -21,7 +21,7 @@ file**. Each branch owns exactly one of:
 | :--- | :--- |
 | `README.md` | All four branches carry a one-line stub that points to their subdirectory. `main` carries the final merged summary. |
 | `DECISIONS.md` | Same convention as `README.md`. |
-| `docker-compose.yml` | `devops` carries the **full integration compose** in `devops/docker-compose.yml`. `frontend` and `backend` each carry a compose file in their own subdirectory and a stub at the root. `main` carries the final integration compose at the root. |
+| `docker-compose.yml` | `devops` carries the **full integration compose** in `devops/docker-compose.yml` and also adds the same compose at the root on `main`. `frontend` and `backend` each carry a **namespaced** compose at the root: `frontend.docker-compose.yml` and `backend.docker-compose.yml`. The four filenames never collide, so merges are conflict-free. |
 
 Anything that **must** exist at the root after the merge (e.g. the
 final `docker-compose.yml`) lives on `devops` until the very last step.
@@ -37,7 +37,7 @@ final `docker-compose.yml`) lives on `devops` until the very last step.
 
 ## Local dev per branch
 
-- `frontend`: `cd bdn && docker compose -f ../docker-compose.yml up frontend` (or just `docker compose up frontend` from the repo root, which uses the frontend service only).
-- `backend`: `docker compose -f backend/docker-compose.yml up`.
+- `frontend`: `docker compose -f frontend.docker-compose.yml up`.
+- `backend`: `docker compose -f backend.docker-compose.yml up`.
 - `devops`: `docker compose -f devops/docker-compose.yml up` (full local stack).
-- `main` (post-merge): `docker compose up`.
+- `main` (post-merge): `docker compose up` against the root `docker-compose.yml` (the devops integration compose, accepted as the final compose during the last PR).
