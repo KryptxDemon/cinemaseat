@@ -1,0 +1,46 @@
+# Real environment files — keep placeholders (.env.example) only.
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+.tox/
+
+# Frontend (Vite/Bun)
+node_modules/
+dist/
+.vite/
+.bun/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker / compose
+docker-compose.override.yml
+
+# Local data / logs
+*.log
+logs/
+data/

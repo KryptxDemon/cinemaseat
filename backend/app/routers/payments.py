@@ -20,8 +20,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.payment import PaymentCreateIn, PaymentInitiatedOut
-from app.services import booking_service
+from app.schemas.payment import (
+    PaymentCallbackIn,
+    PaymentCallbackOut,
+    PaymentCreateIn,
+    PaymentInitiatedOut,
+)
+from app.services import booking_service, payment_service
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 
@@ -68,3 +73,19 @@ def create_payment(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"booking failed: {exc}",
         )
+
+
+@router.post(
+    "/callback",
+    response_model=PaymentCallbackOut,
+    status_code=status.HTTP_200_OK,
+)
+def payment_callback(
+    payload: PaymentCallbackIn, db: Session = Depends(get_db)
+) -> PaymentCallbackOut:
+    """Asynchronous webhook callback from the payment gateway.
+
+    ALWAYS returns HTTP 200 OK after receiving a valid callback.
+    Idempotent: duplicate event_id values are ignored without double processing.
+    """
+    return payment_service.process_payment_callback(db, payload)

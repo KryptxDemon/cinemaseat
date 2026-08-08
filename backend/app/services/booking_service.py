@@ -44,6 +44,7 @@ from app.models.booking_seat import BookingSeat
 from app.models.customer import Customer
 from app.models.hold import Hold, HoldStatus
 from app.models.hold_seat import HoldSeat
+from app.models.show_seat import ShowSeat
 from app.models.payment import Payment, PaymentStatus
 from app.schemas.payment import PaymentCreateIn, PaymentInitiatedOut
 from app.services import gateway_service
@@ -168,7 +169,9 @@ def create_booking_for_hold(
 
     held_seat_ids: list[UUID] = list(
         db.execute(
-            select(HoldSeat.show_seat_id).where(HoldSeat.hold_id == hold.id)
+            select(ShowSeat.seat_id)
+            .join(HoldSeat, HoldSeat.show_seat_id == ShowSeat.id)
+            .where(HoldSeat.hold_id == hold.id)
         ).scalars()
     )
     if not held_seat_ids:
@@ -272,8 +275,16 @@ def get_booking_by_hold(db: Session, hold_id: UUID) -> PaymentInitiatedOut | Non
     if payment is None:
         # Defensive — a booking should always have a payment row.
         return None
+
+    if payment.status is PaymentStatus.SUCCESS or booking.status is BookingStatus.CONFIRMED:
+        status_str = "confirmed"
+    elif payment.status is PaymentStatus.FAILED or booking.status in (BookingStatus.CANCELLED, BookingStatus.EXPIRED):
+        status_str = "failed"
+    else:
+        status_str = "pending"
+
     return PaymentInitiatedOut(
-        status="pending" if payment.status is PaymentStatus.PENDING else "confirmed",
+        status=status_str,
         booking_id=booking.id,
         hold_id=booking.hold_id or hold_id,
         payment_id=payment.id,

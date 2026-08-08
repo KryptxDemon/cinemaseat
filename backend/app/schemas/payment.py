@@ -18,7 +18,7 @@ from datetime import datetime
 from uuid import UUID
 
 from humps import camelize  # pyhumps, imported as `humps`
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Local import — EmailStr is provided by pydantic[email]; we use a
 # permissive regex instead so the backend has zero extra runtime
@@ -50,6 +50,14 @@ class PaymentCreateIn(BaseModel):
         max_length=255,
         description="Buyer email. Matched case-insensitively against existing customers.",
     )
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        v_str = v.strip()
+        if not _EMAIL_RE.match(v_str):
+            raise ValueError("invalid email address")
+        return v_str
 
     def normalized_email(self) -> str:
         return self.email.strip().lower()
@@ -83,3 +91,33 @@ class PaymentInitiatedOut(BaseModel):
     currency: str
     customer_id: UUID
     created_at: datetime
+
+
+class PaymentCallbackIn(BaseModel):
+    """Payload sent by mock gateway to ``POST /payments/callback``.
+
+    Accepts snake_case or camelCase keys (e.g. event_id / eventId, booking_ref / bookingRef).
+    """
+
+    model_config = ConfigDict(
+        alias_generator=camelize,
+        populate_by_name=True,
+    )
+
+    event_id: str = Field(..., description="Unique event identifier from gateway.")
+    payment_id: str = Field(..., description="Gateway payment ID.")
+    booking_ref: str = Field(..., description="Hold ID (UUID string) passed as booking_ref.")
+    status: str = Field(..., description="Outcome: SUCCEEDED, FAILED, or REFUNDED.")
+    amount: float = Field(..., description="Payment amount processed by gateway.")
+
+
+class PaymentCallbackOut(BaseModel):
+    """Response returned by ``POST /payments/callback``. Always HTTP 200."""
+
+    model_config = ConfigDict(
+        alias_generator=camelize,
+        populate_by_name=True,
+    )
+
+    status: str = Field("ok", description="Always 'ok' for a valid callback.")
+    message: str | None = Field(None, description="Optional detail message.")

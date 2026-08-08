@@ -33,6 +33,19 @@ def healthz() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/health")
+def health() -> dict[str, str]:
+    """Simple health probe for the demo stack.
+
+    Returns ``{"status": "ok"}`` as long as the process is responsive.
+    A real readiness probe would also DB-ping here, but for the
+    demo we keep the endpoint stateless so the orchestrator can
+    detect a started FastAPI without needing the database to be
+    ready first (see ``depends_on`` in docker-compose.yml).
+    """
+    return {"status": "ok"}
+
+
 # Routers — wired up in Step 1; endpoints are intentionally stubbed.
 # Real implementations land in Steps 2 (seats + concurrency) and 3 (payment).
 app.include_router(movies.router)

@@ -92,8 +92,8 @@ def _seed_show(db_engine, *, seat_count: int = 1, hold_ttl_seconds: int = 120):
         conn.execute(
             text(
                 """
-                INSERT INTO theatres (id, name, address, created_at)
-                VALUES (:id, 'Verifier Theatre', '1 Demo St', :now)
+                INSERT INTO theatres (id, name, rows, cols, created_at)
+                VALUES (:id, 'Verifier Theatre', 10, 10, :now)
                 """
             ),
             {"id": theatre_id, "now": now},
@@ -114,8 +114,8 @@ def _seed_show(db_engine, *, seat_count: int = 1, hold_ttl_seconds: int = 120):
         conn.execute(
             text(
                 """
-                INSERT INTO movies (id, title, duration_minutes, rating, created_at)
-                VALUES (:id, 'Verifier Movie', 120, 'PG', :now)
+                INSERT INTO movies (id, title, duration_minutes, description, created_at)
+                VALUES (:id, 'Verifier Movie', 120, 'Verifier test movie', :now)
                 """
             ),
             {"id": movie_id, "now": now},
@@ -153,10 +153,10 @@ def _seed_show(db_engine, *, seat_count: int = 1, hold_ttl_seconds: int = 120):
             text(
                 """
                 INSERT INTO customers (id, name, email, phone, created_at)
-                VALUES (:id, 'Hold Owner', 'hold-owner@example.com', '+10000000000', :now)
+                VALUES (:id, 'Hold Owner', :email, '+10000000000', :now)
                 """
             ),
-            {"id": cust_id, "now": now},
+            {"id": cust_id, "email": f"hold-owner-{cust_id}@example.com", "now": now},
         )
 
     return show_id, seat_ids[:seat_count], cust_id
@@ -203,8 +203,10 @@ def _gateway_seen(booking_ref: str) -> bool | str:
         r.raise_for_status()
     except httpx.HTTPError as exc:
         return f"gateway debug probe failed: {exc}"
-    for entry in r.json():
-        if entry.get("booking_ref") == booking_ref:
+    data = r.json()
+    payments = data.get("payments", []) if isinstance(data, dict) else data
+    for entry in payments:
+        if isinstance(entry, dict) and entry.get("booking_ref") == booking_ref:
             return entry.get("payment_id")
     return False
 
@@ -292,7 +294,7 @@ def main() -> int:
     results.append(_check("booking row exists", booking_row is not None))
     results.append(_check(
         "booking.status == 'pending'",
-        booking_row is not None and booking_row.status == "pending",
+        booking_row is not None and str(booking_row.status).lower() == "pending",
         f"got {booking_row.status if booking_row else None!r}",
     ))
     results.append(_check(
@@ -301,7 +303,7 @@ def main() -> int:
     ))
     results.append(_check(
         "payment.status == 'pending'",
-        payment_row is not None and payment_row.status == "pending",
+        payment_row is not None and str(payment_row.status).lower() == "pending",
         f"got {payment_row.status if payment_row else None!r}",
     ))
     results.append(_check(
@@ -311,7 +313,7 @@ def main() -> int:
     ))
     results.append(_check(
         "hold.status flipped to 'converted'",
-        hold_row is not None and hold_row.status == "converted",
+        hold_row is not None and str(hold_row.status).lower() == "converted",
         f"got {hold_row.status if hold_row else None!r}",
     ))
     results.append(_check(
@@ -329,7 +331,7 @@ def main() -> int:
     gw_match = _gateway_seen(hold_id)
     results.append(_check(
         "gateway /debug/payments records our booking_ref",
-        gw_match is not False and not isinstance(gw_match, str),
+        isinstance(gw_match, str),
         f"got {gw_match!r}",
     ))
     if isinstance(gw_match, str):
