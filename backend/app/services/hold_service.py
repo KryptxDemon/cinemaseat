@@ -122,22 +122,37 @@ def create_hold(db: Session, payload: HoldCreateIn) -> HoldOut:
     # claimed. Postgres takes a row-level lock on each matched row, so two
     # concurrent transactions cannot both claim the same (show_id, seat_id).
     #
-    # We use ``.with_for_update(skip_locked=False)`` for explicitness — by
-    # default Postgres' row lock waits; the loser of the race sees fewer
-    # rows in RETURNING because its `status='available'` predicate fails
-    # against the row the winner just modified.
+    # Lazy expiry: a row whose active hold has already passed `expires_at`
+    # is also eligible to be claimed. We do NOT need a background sweeper —
+    # any later `POST /holds` for the same seat will reclaim it. The actual
+    # expiry of the previous `holds` row is recorded in Phase 3b below.
+    #
+    # NOTE on `h.status = 'ACTIVE'`: the `HoldStatus` enum stores values
+    # by NAME (SAEnum without ``values_callable``). The 'available' /
+    # 'held' / 'booked' strings on ``show_seats`` are plain VARCHAR, so
+    # case matters everywhere.
     from sqlalchemy import text  # local import to keep the top tidy
 
     stmt = text(
         """
-        UPDATE show_seats
+        UPDATE show_seats ss
            SET status     = 'held',
-               version    = version + 1,
+               version    = ss.version + 1,
                updated_at = now()
-         WHERE show_id = :show_id
-           AND seat_id = ANY(:seat_ids)
-           AND status  = 'available'
-        RETURNING id AS show_seat_id, seat_id
+         WHERE ss.show_id = :show_id
+           AND ss.seat_id = ANY(:seat_ids)
+           AND (
+                ss.status = 'available'
+             OR (ss.status = 'held' AND NOT EXISTS (
+                    SELECT 1
+                      FROM hold_seats hs
+                      JOIN holds h ON h.id = hs.hold_id
+                     WHERE hs.show_seat_id = ss.id
+                       AND h.status     = 'ACTIVE'
+                       AND h.expires_at > now()
+                 ))
+           )
+        RETURNING ss.id AS show_seat_id, ss.seat_id
         """
     )
 
@@ -160,6 +175,14 @@ def create_hold(db: Session, payload: HoldCreateIn) -> HoldOut:
              WHERE show_id = :show_id
                AND seat_id = ANY(:seat_ids)
                AND status <> 'available'
+               AND EXISTS (
+                     SELECT 1
+                       FROM hold_seats hs
+                       JOIN holds h ON h.id = hs.hold_id
+                      WHERE hs.show_seat_id = show_seats.id
+                        AND h.status     = 'ACTIVE'
+                        AND h.expires_at > now()
+               )
             """
         )
         conflicting = db.execute(
@@ -174,6 +197,31 @@ def create_hold(db: Session, payload: HoldCreateIn) -> HoldOut:
                 f"one or more seat_ids are not part of show {show_id}"
             )
         raise SeatUnavailable(list(conflicting))
+
+    # --- Phase 3b: mark any reclaimed (expired) holds as `expired` --------
+    # We just overwrote show_seats.status='held' for rows that were already
+    # held by an *expired* hold. Reflect that fact on the holds row so
+    # the audit trail is honest. We do NOT touch the hold's show_seats
+    # mapping — those rows are now ours.
+    db.execute(
+        text(
+            """
+            UPDATE holds
+               SET status = 'EXPIRED'
+             WHERE status = 'ACTIVE'
+               AND expires_at <= now()
+               AND id IN (
+                     SELECT hs.hold_id
+                       FROM hold_seats hs
+                       JOIN show_seats ss ON ss.id = hs.show_seat_id
+                      WHERE ss.show_id = :show_id
+                        AND ss.seat_id = ANY(:seat_ids)
+                        AND ss.status  = 'held'
+                   )
+            """
+        ),
+        {"show_id": str(show_id), "seat_ids": requested_seat_ids},
+    )
 
     # --- Phase 4: persist the hold + hold_seats ---------------------------
     now = datetime.now(timezone.utc)
