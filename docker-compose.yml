@@ -1,0 +1,13 @@
+# CinemaSeat root docker-compose.yml
+#
+# On `main` this file is a stub. The full integration stack
+# (postgres + backend + gateway + frontend) is owned by the
+# `devops` branch and lives in devops/docker-compose.yml.
+#
+# During the merge of `devops` into `main` (the last of the three
+# PRs), this file is replaced by the integration compose. After
+# that point `docker compose up` from the repo root brings up the
+# full stack.
+#
+# To run the full stack from the `devops` branch today:
+#   docker compose -f devops/docker-compose.yml up
