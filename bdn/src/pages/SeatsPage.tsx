@@ -13,10 +13,12 @@ import { Badge } from '../components/Badge';
 import { SeatMap } from '../components/SeatMap';
 import { BookingSummary } from '../components/BookingSummary';
 import { formatDuration } from '../utils/formatters';
+import { useAuth } from '../auth';
 
 export const SeatsPage: React.FC = () => {
   const { showId } = useParams<{ showId: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated, login } = useAuth();
 
   // Local state for seat selection and hold confirmation
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
@@ -100,6 +102,11 @@ export const SeatsPage: React.FC = () => {
 
     setIsHolding(true);
     setHoldError(null);
+
+    // Ensure session has an active auth token attached
+    if (!isAuthenticated) {
+      await login('guest.viewer@cinemaseat.com');
+    }
 
     try {
       const response = await createSeatHold({

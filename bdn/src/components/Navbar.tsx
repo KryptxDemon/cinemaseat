@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Film, Menu, X, Terminal, Server } from 'lucide-react';
+import { Film, Menu, X, Terminal, Server, User as UserIcon, LogIn, LogOut } from 'lucide-react';
 import { apiClient } from '../api/client';
+import { useAuth } from '../auth';
 import { Badge } from './Badge';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, login, logout } = useAuth();
 
   const navItems = [
     { label: 'Overview', path: '/' },
@@ -58,19 +60,31 @@ export const Navbar: React.FC = () => {
             })}
           </nav>
 
-          {/* Right Header Controls (FastAPI Status) */}
+          {/* Right Header Controls (Auth) */}
           <div className="hidden sm:flex items-center gap-3">
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-xs">
-              <Server className="w-3.5 h-3.5 text-neutral-400" />
-              <span className="text-neutral-400 text-[11px] font-mono">Backend:</span>
-              <Badge
-                variant={apiClient.isMockMode ? 'warning' : 'success'}
-                size="sm"
-                className="font-mono text-[10px]"
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2 bg-neutral-900 border border-neutral-800 rounded-md p-1 pl-2.5 text-xs">
+                <span className="text-neutral-200 font-medium text-xs truncate max-w-[120px]">
+                  {user?.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="p-1 text-neutral-400 hover:text-red-400 hover:bg-neutral-800 rounded transition-colors"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => login('guest.viewer@cinemaseat.com')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition-colors"
               >
-                {apiClient.isMockMode ? 'FastAPI Mock' : 'FastAPI Live'}
-              </Badge>
-            </div>
+                <LogIn className="w-3.5 h-3.5" /> Sign In
+              </button>
+            )}
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -109,12 +123,32 @@ export const Navbar: React.FC = () => {
           })}
 
           <div className="pt-2 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
-            <span className="flex items-center gap-1.5 font-mono text-[11px]">
-              <Terminal className="w-3.5 h-3.5 text-neutral-500" /> REST Contract Ready
-            </span>
-            <Badge variant={apiClient.isMockMode ? 'warning' : 'success'} size="sm">
-              {apiClient.isMockMode ? 'FastAPI Mock' : 'FastAPI Live'}
-            </Badge>
+            {isAuthenticated ? (
+              <div className="flex items-center justify-between w-full">
+                <span className="text-neutral-200 font-medium">{user?.name}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="px-2.5 py-1 text-red-400 bg-neutral-900 border border-neutral-800 rounded font-medium"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  login('guest.viewer@cinemaseat.com');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full py-2 bg-red-600 text-white font-semibold rounded text-center"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </div>
       )}

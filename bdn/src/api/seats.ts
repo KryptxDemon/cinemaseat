@@ -14,8 +14,8 @@ function generateMockSeatMap(showId: string): SeatMapData {
   const movie = MOCK_MOVIES.find((m) => m.id === showtime.movieId) || MOCK_MOVIES[0];
 
   const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
-  const seatsPerRow = 12; // 1 to 12
-  const aisleAfterNumber = [3, 9]; // Aisles between 3-4 and 9-10
+  const seatsPerRow = 12;
+  const aisleAfterNumber = [3, 9];
 
   const show: ShowDetails = {
     id: showtime.id,
@@ -49,10 +49,9 @@ function generateMockSeatMap(showId: string): SeatMapData {
     for (let num = 1; num <= seatsPerRow; num++) {
       const seatId = `${showId}-${row}${num}`;
 
-      // Deterministic pre-booked and pre-held seats for realistic cinema feel
       let status: 'available' | 'booked' | 'held' = 'available';
 
-      // Example pre-booked seats
+      // Example pre-booked seats for realistic layout
       if (
         (row === 'C' && (num === 6 || num === 7)) ||
         (row === 'D' && (num === 5 || num === 6 || num === 7 || num === 8)) ||
@@ -61,7 +60,7 @@ function generateMockSeatMap(showId: string): SeatMapData {
         status = 'booked';
       }
 
-      // Example pre-held seats by another user
+      // Example pre-held seats
       if ((row === 'E' && num === 6) || (row === 'A' && num === 11)) {
         status = 'held';
       }
@@ -89,10 +88,11 @@ function generateMockSeatMap(showId: string): SeatMapData {
   return seatMapData;
 }
 
-/**
- * Update mock seat store when a hold is placed or expires
- */
-export function updateMockSeatStatuses(showId: string, seatIds: string[], newStatus: 'held' | 'booked' | 'available') {
+export function updateMockSeatStatuses(
+  showId: string,
+  seatIds: string[],
+  newStatus: 'held' | 'booked' | 'available'
+) {
   if (!mockSeatStore[showId]) {
     generateMockSeatMap(showId);
   }
@@ -109,11 +109,18 @@ export function updateMockSeatStatuses(showId: string, seatIds: string[], newSta
 /**
  * GET /shows/{showId}/seats
  */
-export async function fetchSeatsByShowId(showId: string): Promise<SeatMapData> {
-  if (apiClient.isMockMode) {
-    await apiClient.simulateLatency(300);
-    return generateMockSeatMap(showId);
+export async function getSeats(showId: string): Promise<SeatMapData> {
+  if (!apiClient.isMockMode) {
+    try {
+      return await apiClient.request<SeatMapData>(`/shows/${showId}/seats`);
+    } catch (err) {
+      console.warn('Backend API unavailable, serving mock seats:', err);
+    }
   }
 
-  return apiClient.request<SeatMapData>(`/shows/${showId}/seats`);
+  await apiClient.simulateLatency(300);
+  return generateMockSeatMap(showId);
 }
+
+// Backward compatibility alias
+export const fetchSeatsByShowId = getSeats;

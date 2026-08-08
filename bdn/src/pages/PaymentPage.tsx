@@ -260,7 +260,7 @@ export const PaymentPage: React.FC = () => {
                   </div>
                   <div>
                     <CardTitle className="text-lg font-bold text-white">Payment</CardTitle>
-                    <p className="text-[11px] text-neutral-400 font-mono">FastAPI Secure Gateway Mock</p>
+                    <p className="text-[11px] text-neutral-400">Secure Checkout</p>
                   </div>
                 </div>
               </CardHeader>
@@ -282,14 +282,14 @@ export const PaymentPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Hackathon Mock Notice */}
-                <div className="p-3.5 rounded-xl bg-neutral-950/60 border border-neutral-800 text-xs font-mono text-neutral-400 space-y-1.5">
+                {/* Security Notice */}
+                <div className="p-3.5 rounded-xl bg-neutral-950/60 border border-neutral-800 text-xs text-neutral-400 space-y-1.5">
                   <div className="flex items-center gap-1.5 text-neutral-300 font-bold">
                     <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Mock Gateway Mode</span>
+                    <span>Secure Checkout</span>
                   </div>
                   <p className="text-[11px] text-neutral-400 leading-relaxed">
-                    No actual credit card credentials or sensitive financial data are collected. Clicking "Pay Now" submits an asynchronous request to <code className="text-white">POST /payments</code>.
+                    Instant seat reservation lock and encrypted payment processing.
                   </p>
                 </div>
 

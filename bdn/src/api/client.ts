@@ -1,29 +1,44 @@
 /// <reference types="vite/client" />
 import { ApiError } from '../types/api';
 
-
 /**
  * CinemaSeat API Client (Configured for FastAPI backend)
  * 
  * Target REST Contract:
- * Base URL: process.env.VITE_API_URL || '/api/v1'
+ * Base URL: import.meta.env.VITE_API_URL || ''
  * Headers: Content-Type: application/json
  */
 
-export const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || '/api/v1';
+export const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || '';
 
 export class HttpClient {
   private baseUrl: string;
   public isMockMode: boolean;
+  private authToken: string | null = null;
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
-    // Auto-detect mock fallback if backend is not configured
-    this.isMockMode = !import.meta.env.VITE_API_URL;
+    // Auto-detect mock mode if VITE_API_URL is empty or not provided
+    const envUrl = (import.meta.env.VITE_API_URL as string) || '';
+    this.isMockMode = !envUrl || envUrl.trim() === '';
   }
 
   /**
-   * Generic fetch wrapper handling headers, JSON serialization, and status codes.
+   * Set or clear the current authentication Bearer token
+   */
+  setAuthToken(token: string | null): void {
+    this.authToken = token;
+  }
+
+  /**
+   * Get the active authentication Bearer token
+   */
+  getAuthToken(): string | null {
+    return this.authToken;
+  }
+
+  /**
+   * Generic fetch wrapper handling headers, JSON serialization, auth token attachment, and status codes.
    */
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
@@ -33,6 +48,11 @@ export class HttpClient {
       'Accept': 'application/json',
       ...(options.headers as Record<string, string> || {}),
     };
+
+    // Attach Bearer authentication token if present and not explicitly overridden
+    if (this.authToken && !headers['Authorization'] && !headers['authorization']) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
+    }
 
     try {
       const response = await fetch(url, {
@@ -50,8 +70,11 @@ export class HttpClient {
 
         const apiError: ApiError = {
           statusCode: response.status,
-          message: (errorData as { detail?: string })?.detail || `API Request failed with status ${response.status}`,
-          details: errorData as Record<string, unknown>,
+          message:
+            (errorData as { detail?: string; message?: string })?.detail ||
+            (errorData as { message?: string })?.message ||
+            `API Request failed with status ${response.status}`,
+          details: typeof errorData === 'object' ? (errorData as Record<string, unknown>) : { body: errorData },
         };
 
         throw apiError;
@@ -59,11 +82,10 @@ export class HttpClient {
 
       return (await response.json()) as T;
     } catch (err: unknown) {
-      if ((err as ApiError).statusCode) {
+      if ((err as ApiError).statusCode !== undefined) {
         throw err;
       }
       
-      // Network or connectivity error
       const networkError: ApiError = {
         statusCode: 0,
         message: 'Unable to connect to CinemaSeat API backend.',
@@ -74,9 +96,9 @@ export class HttpClient {
   }
 
   /**
-   * Helper to simulate network latency for mock mode during design evaluation
+   * Helper to simulate network latency for mock mode
    */
-  async simulateLatency(ms: number = 300): Promise<void> {
+  async simulateLatency(ms: number = 250): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

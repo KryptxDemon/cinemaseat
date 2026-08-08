@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Film, Server } from 'lucide-react';
 import { Navbar } from './components/Navbar';
+import { AuthProvider, ProtectedRoute } from './auth';
 import { MoviesPage } from './pages/MoviesPage';
 import { MovieDetailsPage } from './pages/MovieDetailsPage';
 import { ShowtimesPage } from './pages/ShowtimesPage';
@@ -12,24 +13,43 @@ import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-[#141414] text-white flex flex-col font-sans selection:bg-red-600 selection:text-white">
-        {/* Global Navigation Header */}
-        <Navbar />
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen bg-[#141414] text-white flex flex-col font-sans selection:bg-red-600 selection:text-white">
+          {/* Global Navigation Header */}
+          <Navbar />
 
-        {/* Main Responsive Content Frame */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-          <Routes>
-            <Route path="/" element={<MoviesPage />} />
-            <Route path="/movies" element={<MoviesPage />} />
-            <Route path="/movies/:movieId" element={<MovieDetailsPage />} />
-            <Route path="/shows/:showId/seats" element={<SeatsPage />} />
-            <Route path="/payment/:bookingId" element={<PaymentPage />} />
-            <Route path="/booking/:bookingId" element={<BookingPage />} />
-            <Route path="/showtimes" element={<ShowtimesPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </main>
+          {/* Main Responsive Content Frame */}
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<MoviesPage />} />
+              <Route path="/movies" element={<MoviesPage />} />
+              <Route path="/movies/:movieId" element={<MovieDetailsPage />} />
+              <Route path="/showtimes" element={<ShowtimesPage />} />
+              <Route path="/shows/:showId/seats" element={<SeatsPage />} />
+
+              {/* Protected Routes */}
+              <Route
+                path="/payment/:bookingId"
+                element={
+                  <ProtectedRoute>
+                    <PaymentPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/booking/:bookingId"
+                element={
+                  <ProtectedRoute>
+                    <BookingPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </main>
 
         {/* Shared Netflix Dark Footer */}
         <footer className="border-t border-neutral-800 bg-neutral-950 py-8 text-xs text-neutral-400 mt-auto">
@@ -52,12 +72,13 @@ export default function App() {
               </Link>
             </div>
 
-            <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-400">
-              <Server className="w-3.5 h-3.5 text-neutral-400" /> FastAPI REST Integration Ready
+            <div className="text-[11px] text-neutral-500">
+              © {new Date().getFullYear()} CinemaSeat. All rights reserved.
             </div>
           </div>
         </footer>
       </div>
     </Router>
+  </AuthProvider>
   );
 }
