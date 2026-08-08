@@ -1,0 +1,155 @@
+# CinemaSeat — single-command demo stack.
+#
+# Brings up Postgres + FastAPI backend + the provided mock gateway
+# (asifmahmoud414/mock-gateway:latest) + the React frontend, all wired
+# together over the default compose network.
+#
+# Usage:
+#   cp .env.example .env       # edit if you want to change defaults
+#   docker compose up --build
+#
+# Then open http://localhost:3000 (frontend SPA). The SPA talks to
+# the gateway at http://localhost:8080, which proxies to the backend
+# at http://backend:8000 (service-name DNS inside the compose network).
+#
+# Architecture
+# ------------
+#   Browser ──► Frontend (:3000)
+#                  │
+#                  ▼
+#             Gateway (:8080) ──► Backend (:8000)
+#                                       │
+#                                       ▼
+#                                  Postgres (:5432, named volume)
+#
+# Service dependencies use `condition: service_healthy` so the backend
+# never starts until Postgres is accepting connections, and the gateway
+# never starts until the backend's /health probe is 200 OK.
+#
+# Database migrations are run automatically by `backend/entrypoint.sh`
+# via `alembic upgrade head` before uvicorn boots.
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — official image, named volume for persistence.
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16
+    container_name: cinemaseat-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cinemaseat}
+      POSTGRES_USER: ${POSTGRES_USER:-cinemaseat}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cinemaseat}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Exposed on the host so you can psql into it from outside Docker.
+      # Override with DB_HOST_PORT if 5432 is already taken on the host.
+      - "${DB_HOST_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cinemaseat} -d ${POSTGRES_DB:-cinemaseat}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # FastAPI backend — built from ./backend/Dockerfile.
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: cinemaseat/backend:latest
+    container_name: cinemaseat-backend
+    restart: unless-stopped
+    environment:
+      # Database — uses service name `db`, NOT localhost.
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://cinemaseat:cinemaseat@db:5432/cinemaseat}
+      # Mock gateway — uses service name `gateway`, NOT localhost.
+      # The upstream image listens on container port 9000 (mapped to host 8080).
+      MOCK_GATEWAY_URL: ${MOCK_GATEWAY_URL:-http://gateway:9000}
+      # The callback URL is what the gateway POSTs back to. The backend
+      # is reachable from the gateway via the service name `backend`.
+      MOCK_GATEWAY_CALLBACK_URL: ${MOCK_GATEWAY_CALLBACK_URL:-http://backend:8000/payments/callback}
+      MOCK_GATEWAY_MODE: ${MOCK_GATEWAY_MODE:-deterministic}
+      HOLD_TTL_SECONDS: ${HOLD_TTL_SECONDS:-120}
+      DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-USD}
+      ENVIRONMENT: docker
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # Hits the FastAPI /health endpoint. start_period gives Alembic
+      # time to run before the first probe is sent.
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).status == 200 else 1)\""]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # Mock payment gateway — official image, pulled from Docker Hub.
+  # We do NOT modify or rebuild it; we only point it at the backend.
+  # ---------------------------------------------------------------------------
+  gateway:
+    image: asifmahmoud414/mock-gateway:latest
+    container_name: cinemaseat-gateway
+    restart: unless-stopped
+    environment:
+      # The gateway uses BACKEND_URL to know where to POST callbacks.
+      # Service name `backend` is resolvable on the compose network.
+      - BACKEND_URL=http://backend:8000
+    ports:
+      # Upstream mock-gateway listens on container port 9000; expose it as 8080 on host.
+      - "8080:9000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      # The mock gateway exposes /health (not /healthz) on its internal 9000.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9000/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # React frontend — built from ./bdn/Dockerfile (frontend branch).
+  # Lives behind the `frontend` profile because the `bdn/` directory
+  # only ships on the `frontend` branch. Bring it up with:
+  #   docker compose --profile frontend up --build
+  # ---------------------------------------------------------------------------
+  frontend:
+    profiles: ["frontend"]
+    build:
+      context: ./bdn
+      dockerfile: Dockerfile
+      args:
+        # Browser-side base URL. Baked into the JS bundle at build time.
+        # The SPA in the browser must reach the gateway via the HOST
+        # machine, not via Docker DNS — so this is `localhost`.
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    image: cinemaseat/frontend:latest
+    container_name: cinemaseat-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+# Named volume — survives `docker compose down`; only `docker compose
+# down -v` destroys it. This is the persistence requirement from the
+# containerization spec.
+volumes:
+  postgres_data:

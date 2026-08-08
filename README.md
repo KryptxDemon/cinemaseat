@@ -1,54 +1,45 @@
-# CinemaSeat
+# CinemaSeat — backend branch
 
-A scalable, reliable movie-ticket booking platform built for the
-hackathon. From a clean clone:
+This branch implements the FastAPI booking service and the
+containerised demo stack. From a clean clone:
 
 ```bash
-docker compose up
+cp .env.example .env
+docker compose up --build
 ```
 
-…brings up postgres, the FastAPI backend, the payment gateway, and
-the React frontend on a single Docker network. See
-[`BRANCHES.md`](./BRANCHES.md) for the multi-branch development
-model.
+That single command brings up Postgres, the FastAPI backend, the
+provided mock payment gateway, and the React frontend — all on one
+Docker network. See [`backend/README.md`](./backend/README.md) for
+endpoint docs and [`BRANCHES.md`](./BRANCHES.md) for branch ownership.
 
-## Architecture
+The root `README.md` is finalized on the `main` branch after the
+last PR is merged.
 
-```
-                    ┌────────────────────────┐
-   Browser ───────▶│  Nginx  (frontend :80) │
-                    └──────────┬─────────────┘
-                               │ http://gateway:8080
-                    ┌──────────▼─────────────┐
-                    │  mock-gateway  (:8080) │
-                    └──────────┬─────────────┘
-                               │ http://backend:8000
-                    ┌──────────▼─────────────┐
-                    │  FastAPI  (backend)    │
-                    └──────────┬─────────────┘
-                               │ SQLAlchemy
-                    ┌──────────▼─────────────┐
-                    │  PostgreSQL 16         │
-                    └────────────────────────┘
-```
+## CI / CD
 
-## Endpoints (final, after merge)
+Two GitHub Actions workflows live in `.github/workflows/`:
 
-| Method | Path | Service |
-| :--- | :--- | :--- |
-| GET  | `/healthz` | frontend, gateway, backend |
-| GET  | `/movies` | frontend → gateway → backend |
-| GET  | `/shows/{show_id}/seats` | frontend → gateway → backend |
-| POST | `/holds` | frontend → gateway → backend |
-| POST | `/payments` | frontend → gateway → backend |
-| GET  | `/bookings/{booking_id}` | frontend → gateway → backend |
-| GET  | `/bookings/{booking_id}/ticket` | frontend → gateway → backend (PDF) |
+- `ci.yml` — runs the FastAPI test suite and Alembic dry-run on every push
+  and PR.
+- `cd.yml` — triggered by a successful CI run on `main` (via `workflow_run`).
+  Builds the existing `backend/Dockerfile` and pushes two tags to Docker
+  Hub:
+    - `<DOCKERHUB_USERNAME>/cinemaseat-backend:latest`
+    - `<DOCKERHUB_USERNAME>/cinemaseat-backend:<commit-sha>`
 
-## Branches
+  The CD pipeline only **builds and publishes** the image. Deployment
+  (manual or otherwise) is out of scope.
 
-- `frontend` — `bdn/` React + Vite SPA
-- `backend` — `backend/` FastAPI service
-- `devops` — `.github/`, `devops/docker-compose.yml`, load test
-- `main` — merge target
+### Required repository secrets for CD
 
-See [`BRANCHES.md`](./BRANCHES.md) and [`DECISIONS.md`](./DECISIONS.md).
+| Secret             | Purpose                                            |
+|--------------------|----------------------------------------------------|
+| `DOCKERHUB_USERNAME` | Docker Hub account that owns the image repo     |
+| `DOCKERHUB_TOKEN`    | Docker Hub access token (not the account password) |
+
+Optional repository variable:
+
+| Variable          | Purpose                                          |
+|-------------------|--------------------------------------------------|
+| `DOCKERHUB_REPO`  | Image repo name (defaults to `cinemaseat-backend`) |

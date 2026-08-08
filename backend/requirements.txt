@@ -1,0 +1,15 @@
+# CinemaSeat backend dependencies.
+# Pinned to versions that work with Python 3.12.
+# NOTE: the package on PyPI is named `pyhumps`, but it imports as `humps`.
+
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+sqlalchemy==2.0.36
+psycopg[binary]==3.2.3
+pydantic==2.10.3
+pydantic-settings==2.7.1
+pyhumps==1.6.1
+httpx==0.28.1
+reportlab==4.2.5
+python-dotenv==1.0.1
+alembic==1.14.0
