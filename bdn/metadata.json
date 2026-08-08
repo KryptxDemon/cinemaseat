@@ -1,0 +1,6 @@
+{
+  "name": "CinemaSeat",
+  "description": "Production-grade dark frontend foundation for the CinemaSeat movie ticketing system, ready for FastAPI integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
