@@ -1,0 +1,12 @@
+# CinemaSeat root docker-compose.yml
+#
+# This file is a pointer stub on the `backend` branch.
+# The backend service is defined in backend.docker-compose.yml
+# at the repo root, and the full integration stack lives on
+# the `devops` branch in devops/docker-compose.yml.
+#
+# After all four branches merge into `main`, this file is
+# replaced by the `devops` integration compose. See BRANCHES.md.
+#
+# To run the backend locally:
+#   docker compose -f backend.docker-compose.yml up
