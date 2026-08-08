@@ -49,6 +49,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.models.customer import Customer
 from app.models.hold import Hold, HoldStatus
 from app.models.hold_seat import HoldSeat
 from app.models.show import Show
@@ -99,6 +100,27 @@ def create_hold(db: Session, payload: HoldCreateIn) -> HoldOut:
     show_id = payload.show_id
     requested_seat_ids = list(dict.fromkeys(payload.seat_ids))  # dedupe, preserve order
     customer_id = payload.customer_id
+
+    # If the client (SPA) didn't supply a customer_id, create a single
+    # anonymous "guest" customer and reuse it for this and future holds.
+    # We avoid creating a fresh guest row per request so the unique-email
+    # constraint doesn't fire and so polling / cancellation can find the
+    # same hold later.
+    if customer_id is None:
+        existing_guest = db.execute(
+            select(Customer).where(Customer.email == "guest@cinemaseat.local")
+        ).scalar_one_or_none()
+        if existing_guest is not None:
+            customer_id = existing_guest.id
+        else:
+            guest = Customer(
+                name="Guest",
+                email="guest@cinemaseat.local",
+                phone="+10000000000",
+            )
+            db.add(guest)
+            db.flush()
+            customer_id = guest.id
 
     if not requested_seat_ids:
         raise SeatUnavailable([])  # treated as 400 by the router

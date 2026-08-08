@@ -2,7 +2,10 @@ export type SeatStatus = 'available' | 'selected' | 'held' | 'booked';
 export type SeatTier = 'standard' | 'premium' | 'vip';
 
 export interface Seat {
+  /** show_seats.id (per-show row). Used to identify a seat in this show. */
   id: string;
+  /** Physical seats.id from the backend. Needed when calling POST /holds. */
+  seatId: string;
   row: string;
   number: number;
   tier: SeatTier;

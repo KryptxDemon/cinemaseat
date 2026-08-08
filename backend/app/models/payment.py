@@ -38,7 +38,13 @@ class Payment(Base):
 
     amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     status: Mapped[PaymentStatus] = mapped_column(
-        SAEnum(PaymentStatus, name="payment_status", native_enum=False, length=16),
+        SAEnum(
+            PaymentStatus,
+            name="payment_status",
+            native_enum=False,
+            length=16,
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=PaymentStatus.PENDING,
         index=True,

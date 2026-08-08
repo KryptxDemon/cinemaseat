@@ -29,7 +29,14 @@ class HoldCreateIn(BaseModel):
     seat_ids: list[UUID] = Field(
         ..., min_length=1, description="Physical seat IDs to hold. All-or-nothing."
     )
-    customer_id: UUID = Field(..., description="The customer placing the hold.")
+    customer_id: UUID | None = Field(
+        None,
+        description=(
+            "Optional. The customer placing the hold. When omitted the "
+            "service creates an anonymous 'guest' customer row so the SPA "
+            "can reserve seats before the customer has provided contact info."
+        ),
+    )
 
 
 class HeldSeatOut(BaseModel):

@@ -55,7 +55,13 @@ class Booking(Base):
     )
 
     status: Mapped[BookingStatus] = mapped_column(
-        SAEnum(BookingStatus, name="booking_status", native_enum=False, length=16),
+        SAEnum(
+            BookingStatus,
+            name="booking_status",
+            native_enum=False,
+            length=16,
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=BookingStatus.PENDING,
         index=True,

@@ -46,7 +46,17 @@ class ShowSeat(Base):
     )
 
     status: Mapped[ShowSeatStatus] = mapped_column(
-        SAEnum(ShowSeatStatus, name="show_seat_status", native_enum=False, length=16),
+        # The DB column stores lowercase values ("available", "held", "booked")
+        # because the alembic migration created it with those literals. The
+        # Python enum uses SCREAMING_SNAKE names; values_callable bridges the
+        # gap so SQLAlchemy compares against the .value strings.
+        SAEnum(
+            ShowSeatStatus,
+            name="show_seat_status",
+            native_enum=False,
+            length=16,
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=ShowSeatStatus.AVAILABLE,
         index=True,

@@ -47,7 +47,13 @@ class Hold(Base):
     )
 
     status: Mapped[HoldStatus] = mapped_column(
-        SAEnum(HoldStatus, name="hold_status", native_enum=False, length=16),
+        SAEnum(
+            HoldStatus,
+            name="hold_status",
+            native_enum=False,
+            length=16,
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=HoldStatus.ACTIVE,
         index=True,

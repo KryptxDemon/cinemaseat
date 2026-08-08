@@ -28,9 +28,22 @@ export async function holdSeat(showIdOrRequest: string | CreateHoldRequest, seat
 
   if (!apiClient.isMockMode) {
     try {
+      // The seat map returns rows whose `id` is the *show_seat* id, but the
+      // backend's POST /holds filter operates on the physical *seat* id
+      // (show_seats.seat_id). Look up the seat map once to translate.
+      const seatMap = await getSeats(request.showId);
+      const physicalSeatIds = seatMap.seats
+        .filter((s) => request.seatIds.includes(s.id))
+        .map((s) => s.seatId);
+
+      const backendPayload = {
+        showId: request.showId,
+        seatIds: physicalSeatIds,
+      };
+
       return await apiClient.request<HoldResponse>('/holds', {
         method: 'POST',
-        body: JSON.stringify(request),
+        body: JSON.stringify(backendPayload),
       });
     } catch (err) {
       if ((err as ApiError)?.statusCode === 409 || (err as ApiError)?.statusCode === 400) {

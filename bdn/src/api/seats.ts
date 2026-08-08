@@ -129,11 +129,17 @@ export function updateMockSeatStatuses(
 
 /**
  * GET /shows/{showId}/seats
+ *
+ * The backend returns a `ShowSeatMapOut` with each seat row keyed by
+ * `id` (show_seats.id) and `seatId` (physical seats.id), plus
+ * `rowLabel` and `colLabel`. We map that onto the SPA's `Seat` shape
+ * (`row`, `number`, plus the physical `seatId` for /holds).
  */
 export async function getSeats(showId: string): Promise<SeatMapData> {
   if (!apiClient.isMockMode) {
     try {
-      return await apiClient.request<SeatMapData>(`/shows/${showId}/seats`);
+      const backend = await apiClient.request<unknown>(`/shows/${showId}/seats`);
+      return mapBackendSeatMapToSpa(backend, showId);
     } catch (err) {
       console.warn('Backend API unavailable, serving mock seats:', err);
     }
@@ -141,6 +147,74 @@ export async function getSeats(showId: string): Promise<SeatMapData> {
 
   await apiClient.simulateLatency(300);
   return generateMockSeatMap(showId);
+}
+
+/**
+ * Convert the backend's `ShowSeatMapOut` into the SPA's `SeatMapData`.
+ * Backend fields:
+ *   show.{id, movieId, hallName, startTime, date, format, priceUsd}
+ *   seats[i].{id, seatId, rowLabel, colLabel, status, priceUsd}
+ *   rows, seatsPerRow
+ */
+function mapBackendSeatMapToSpa(
+  backend: unknown,
+  showId: string
+): SeatMapData {
+  const data = backend as {
+    show: {
+      id: string;
+      movieId: string;
+      hallName: string;
+      format: string;
+      startTime: string;
+      date: string;
+      priceUsd: number;
+    };
+    seats: Array<{
+      id: string;
+      seatId: string;
+      rowLabel: string;
+      colLabel: number;
+      status: string;
+      priceUsd: number;
+    }>;
+    rows: string[];
+    seatsPerRow: number;
+  };
+
+  const seats: Seat[] = data.seats.map((s) => ({
+    id: s.id,
+    seatId: s.seatId,
+    row: s.rowLabel,
+    number: s.colLabel,
+    tier: 'standard',
+    priceUSD: s.priceUsd,
+    status: (s.status === 'booked' || s.status === 'held' || s.status === 'available')
+      ? (s.status as Seat['status'])
+      : 'available',
+  }));
+
+  const show: ShowDetails = {
+    id: data.show.id,
+    movieId: data.show.movieId,
+    movieTitle: '', // populated by the SPA via separate movie fetch
+    moviePosterUrl: '',
+    durationMinutes: 0,
+    genre: '',
+    hallName: data.show.hallName,
+    format: data.show.format,
+    startTime: data.show.startTime,
+    date: data.show.date,
+    basePriceUSD: data.show.priceUsd,
+  };
+
+  return {
+    show,
+    rows: data.rows,
+    seatsPerRow: data.seatsPerRow,
+    aisleAfterNumber: [],
+    seats,
+  };
 }
 
 // Backward compatibility alias
