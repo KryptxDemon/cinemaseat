@@ -20,6 +20,7 @@ class Movie(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     poster_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    banner_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
