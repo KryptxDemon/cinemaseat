@@ -1,4 +1,10 @@
-"""Seat schemas — what `/shows/{id}/seats` returns to the frontend."""
+"""Seat schemas — what `/shows/{id}/seats` returns to the frontend.
+
+Step 5: the seat map is a view over ``show_seats`` (per-show availability),
+joined to the physical ``seats`` table for row/col labels. There is NO
+``SeatStatus`` on the global ``seats`` table — status lives on
+``show_seats`` and is read from there.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +14,7 @@ from uuid import UUID
 from humps import camelize  # installed as `pyhumps`, imports as `humps`
 from pydantic import BaseModel, ConfigDict
 
-from app.models.seat import SeatStatus
+from app.models.show_seat import ShowSeatStatus
 
 
 class SeatOut(BaseModel):
@@ -20,11 +26,11 @@ class SeatOut(BaseModel):
         from_attributes=True,
     )
 
-    id: UUID
-    show_id: UUID
-    row_label: int
+    id: UUID                 # physical seat id
+    show_seat_id: UUID       # show_seat row id (the unit of contention)
+    row_label: str
     col_label: int
-    status: SeatStatus
+    status: ShowSeatStatus
     version: int
 
 

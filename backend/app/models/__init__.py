@@ -9,6 +9,7 @@ from app.models.booking import Booking, BookingStatus
 from app.models.booking_seat import BookingSeat
 from app.models.customer import Customer
 from app.models.hold import Hold, HoldStatus
+from app.models.hold_seat import HoldSeat
 from app.models.movie import Movie
 from app.models.payment import Payment, PaymentStatus
 from app.models.payment_event import PaymentEvent
@@ -23,6 +24,7 @@ __all__ = [
     "BookingStatus",
     "Customer",
     "Hold",
+    "HoldSeat",
     "HoldStatus",
     "Movie",
     "Payment",
