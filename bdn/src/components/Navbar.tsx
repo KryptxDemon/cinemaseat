@@ -12,7 +12,6 @@ export const Navbar: React.FC = () => {
     { label: 'Overview', path: '/' },
     { label: 'Movies', path: '/movies' },
     { label: 'Showtimes', path: '/showtimes' },
-    { label: 'Design System', path: '/design-system' },
   ];
 
   const isActive = (path: string) => {

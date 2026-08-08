@@ -5,8 +5,9 @@ import { Navbar } from './components/Navbar';
 import { MoviesPage } from './pages/MoviesPage';
 import { MovieDetailsPage } from './pages/MovieDetailsPage';
 import { ShowtimesPage } from './pages/ShowtimesPage';
-import { DesignSystemPage } from './pages/DesignSystemPage';
 import { SeatsPage } from './pages/SeatsPage';
+import { PaymentPage } from './pages/PaymentPage';
+import { BookingPage } from './pages/BookingPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
@@ -23,8 +24,9 @@ export default function App() {
             <Route path="/movies" element={<MoviesPage />} />
             <Route path="/movies/:movieId" element={<MovieDetailsPage />} />
             <Route path="/shows/:showId/seats" element={<SeatsPage />} />
+            <Route path="/payment/:bookingId" element={<PaymentPage />} />
+            <Route path="/booking/:bookingId" element={<BookingPage />} />
             <Route path="/showtimes" element={<ShowtimesPage />} />
-            <Route path="/design-system" element={<DesignSystemPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
@@ -47,9 +49,6 @@ export default function App() {
               </Link>
               <Link to="/showtimes" className="hover:text-white transition-colors">
                 Showtimes
-              </Link>
-              <Link to="/design-system" className="hover:text-white transition-colors">
-                Design Tokens
               </Link>
             </div>
 
