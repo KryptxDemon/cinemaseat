@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, ShieldCheck, Ticket, AlertCircle, Sparkles, Check } from 'lucide-react';
 import { HoldResponse } from '../types/seat';
 import { PaymentStatusType, PaymentResponse } from '../types/payment';
 import { processPayment } from '../api/payments';
-import { saveMockBooking, getBooking } from '../api/bookings';
+import { saveMockBooking } from '../api/bookings';
 import { HoldTimer } from '../components/HoldTimer';
 import { PaymentStatus } from '../components/PaymentStatus';
 import { Button } from '../components/Button';
@@ -32,14 +32,6 @@ export const PaymentPage: React.FC = () => {
   const [paymentResponse, setPaymentResponse] = useState<PaymentResponse | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [isExpired, setIsExpired] = useState<boolean>(false);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Cleanup polling interval on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
-  }, []);
 
   // Load hold information from sessionStorage or mock fallback
   useEffect(() => {
@@ -106,44 +98,6 @@ export const PaymentPage: React.FC = () => {
     setPaymentError('Your seat hold timer expired. Please return and select seats again.');
   }, []);
 
-  // Poll GET /bookings/{holdId} until backend confirms or fails the payment.
-  // The real backend always returns status:"pending" from POST /payments —
-  // confirmation only happens after the gateway fires the callback (2–15s later).
-  const startPolling = useCallback((holdId: string) => {
-    if (pollingRef.current) clearInterval(pollingRef.current);
-
-    pollingRef.current = setInterval(async () => {
-      try {
-        const booking = await getBooking(holdId);
-
-        if (booking.status === 'confirmed') {
-          clearInterval(pollingRef.current!);
-          pollingRef.current = null;
-          setPaymentStatus('successful');
-
-          // Clear hold from session storage
-          for (let i = sessionStorage.length - 1; i >= 0; i--) {
-            const key = sessionStorage.key(i);
-            if (key && key.startsWith('cinemaseat_hold_')) {
-              sessionStorage.removeItem(key);
-            }
-          }
-
-          // Navigate to confirmation page
-          navigate(`/booking/${booking.bookingId}`);
-        } else if (booking.status === 'failed' || booking.status === 'cancelled') {
-          clearInterval(pollingRef.current!);
-          pollingRef.current = null;
-          setPaymentStatus('failed');
-          setPaymentError('Payment was declined by the gateway. Please try again.');
-        }
-        // status === 'pending' → keep polling
-      } catch {
-        // Network error during poll — keep trying, do not surface to user yet
-      }
-    }, 2500);
-  }, [navigate]);
-
   // Handle "Pay Now" action
   const handlePayNow = async () => {
     if (!holdDetails || isExpired) return;
@@ -152,7 +106,7 @@ export const PaymentPage: React.FC = () => {
     setPaymentError(null);
 
     try {
-      // POST /payments — backend returns { status: "pending" } immediately
+      // POST /payments API call
       const res = await processPayment({
         holdId: holdDetails.hold.holdId,
         amountUSD: holdDetails.hold.totalPriceUSD,
@@ -160,10 +114,10 @@ export const PaymentPage: React.FC = () => {
       });
 
       setPaymentResponse(res);
+      setPaymentStatus(res.status);
 
       if (res.status === 'successful') {
-        // Mock mode: payment resolved synchronously — handle immediately
-        setPaymentStatus('successful');
+        // Save confirmed booking object
         saveMockBooking({
           bookingId: holdDetails.hold.holdId,
           movieTitle: holdDetails.movieTitle || 'Movie Ticket',
@@ -180,21 +134,14 @@ export const PaymentPage: React.FC = () => {
           createdAt: new Date().toISOString(),
           paymentRef: res.transactionRef,
         });
-        // Clear hold from session storage
-        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+
+        // Clear hold from session storage after successful payment
+        for (let i = 0; i < sessionStorage.length; i++) {
           const key = sessionStorage.key(i);
           if (key && key.startsWith('cinemaseat_hold_')) {
             sessionStorage.removeItem(key);
           }
         }
-      } else if (res.status === 'pending') {
-        // Real backend mode: start polling GET /bookings/{holdId}
-        // until the gateway callback arrives and backend confirms
-        setPaymentStatus('pending');
-        startPolling(holdDetails.hold.holdId);
-      } else if (res.status === 'failed') {
-        setPaymentStatus('failed');
-        setPaymentError(res.errorMessage || 'Payment failed. Please try again.');
       }
     } catch (err: unknown) {
       setPaymentStatus('failed');

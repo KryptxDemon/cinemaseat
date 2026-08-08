@@ -65,7 +65,7 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
               <Ticket className="w-5 h-5 text-neutral-500 mx-auto" />
               <p className="text-xs text-neutral-300 font-medium">No seats selected yet</p>
               <p className="text-xs text-neutral-400">
-                Click any available seat on the map
+                Click any available seat on the map (max 4 seats)
               </p>
             </div>
           ) : (
@@ -76,7 +76,7 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
                   className={`px-3 py-1.5 rounded-lg border text-xs flex items-center gap-2 ${
                     isHeld
                       ? 'bg-amber-950/40 border-amber-800/80 text-amber-300'
-                      : 'bg-red-950/40 border-red-800/80 text-red-300'
+                      : 'bg-emerald-950/40 border-emerald-800/80 text-emerald-300'
                   }`}
                 >
                   <span className="font-bold">{seat.row}{seat.number}</span>

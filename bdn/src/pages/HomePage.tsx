@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Film, Zap, ShieldCheck, ArrowRight, Clock, Star, Calendar, Ticket, Sparkles } from 'lucide-react';
+import { Film, Zap, ShieldCheck, ArrowRight, Clock, Calendar, Ticket, Sparkles } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/Card';
 import { Badge } from '../components/Badge';
@@ -116,9 +116,6 @@ export const HomePage: React.FC = () => {
                   <div className="absolute top-3 left-3 flex gap-1.5">
                     <Badge variant="primary" size="sm">
                       {movie.ageRating}
-                    </Badge>
-                    <Badge variant="gold" size="sm" icon={<Star className="w-3 h-3 fill-amber-500 text-amber-500" />}>
-                      {movie.rating.toFixed(1)}
                     </Badge>
                   </div>
 

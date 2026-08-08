@@ -16,11 +16,10 @@ export class HttpClient {
   public isMockMode: boolean;
   private authToken: string | null = null;
 
-  constructor(baseUrl: string = API_BASE_URL) {
+  constructor(baseUrl: string = '') {
     this.baseUrl = baseUrl;
-    // Auto-detect mock mode if VITE_API_URL is empty or not provided
-    const envUrl = (import.meta.env.VITE_API_URL as string) || '';
-    this.isMockMode = !envUrl || envUrl.trim() === '';
+    // Client-side execution mode
+    this.isMockMode = true;
   }
 
   /**

@@ -35,7 +35,7 @@ export const Seat: React.FC<SeatProps> = ({
 
   if (isCurrentlySelected) {
     statusClasses =
-      'bg-[#E50914] border-red-400 text-white font-bold shadow-md shadow-red-950/60 scale-105 z-10';
+      'bg-emerald-600 border-emerald-400 text-white font-bold shadow-md shadow-emerald-950/60 scale-105 z-10';
   } else if (isHeldByUser) {
     statusClasses =
       'bg-amber-600 border-amber-400 text-white font-bold shadow-md shadow-amber-950/50 scale-105 z-10';
@@ -46,9 +46,9 @@ export const Seat: React.FC<SeatProps> = ({
     statusClasses =
       'bg-neutral-900/60 border-neutral-800/80 text-neutral-600 cursor-not-allowed';
   } else {
-    // Available seat - clean, simple, easy to read
+    // Available seat - clean, white background
     statusClasses =
-      'bg-neutral-900 border-neutral-700/80 text-neutral-200 hover:bg-[#E50914] hover:text-white hover:border-red-500 transition-colors';
+      'bg-white border-neutral-200 text-neutral-900 font-bold hover:bg-emerald-500 hover:text-white hover:border-emerald-400 transition-colors';
   }
 
   return (

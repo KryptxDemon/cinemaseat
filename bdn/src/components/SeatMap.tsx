@@ -105,13 +105,13 @@ export const SeatMap: React.FC<SeatMapProps> = ({
       <div className="pt-6 border-t border-neutral-800/80">
         <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs sm:text-sm font-medium text-neutral-300">
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-neutral-900 border border-neutral-700" />
+            <span className="w-4 h-4 rounded bg-white border border-neutral-300" />
             <span>Available</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-[#E50914] border border-red-400" />
-            <span className="font-bold text-white">Selected</span>
+            <span className="w-4 h-4 rounded bg-emerald-600 border border-emerald-400" />
+            <span className="font-bold text-emerald-400">Selected</span>
           </div>
 
           <div className="flex items-center gap-2">

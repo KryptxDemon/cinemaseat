@@ -29,7 +29,7 @@ function generateMockSeatMap(showId: string): SeatMapData {
     format: showtime.format,
     startTime: showtime.startTime,
     date: showtime.date,
-    screenInfo: `${showtime.format} • 4K Laser Projection • Dolby Atmos`,
+    screenInfo: showtime.format,
     basePriceUSD: showtime.priceUSD,
   };
 
@@ -37,20 +37,24 @@ function generateMockSeatMap(showId: string): SeatMapData {
   const targetAvailableCount = Math.min(totalSeats, Math.max(0, showtime.availableSeatsCount));
   const targetBookedCount = totalSeats - targetAvailableCount;
 
-  // Deterministically select indices to mark as booked based on showtime ID hash
-  const bookedIndices = new Set<number>();
+  // Deterministically select exact indices to mark as booked based on showtime ID hash
+  const allIndices = Array.from({ length: totalSeats }, (_, i) => i);
   let hash = 0;
   for (let i = 0; i < showId.length; i++) {
     hash = (hash << 5) - hash + showId.charCodeAt(i);
     hash |= 0;
   }
 
-  let attempt = 0;
-  while (bookedIndices.size < targetBookedCount && attempt < totalSeats * 2) {
-    const idx = Math.abs((hash + attempt * 17 + attempt * attempt) % totalSeats);
-    bookedIndices.add(idx);
-    attempt++;
+  let seed = Math.abs(hash) || 12345;
+  for (let i = allIndices.length - 1; i > 0; i--) {
+    seed = (seed * 9301 + 49297) % 233280;
+    const j = Math.floor((seed / 233280) * (i + 1));
+    const temp = allIndices[i];
+    allIndices[i] = allIndices[j];
+    allIndices[j] = temp;
   }
+
+  const bookedIndices = new Set<number>(allIndices.slice(0, targetBookedCount));
 
   let globalIndex = 0;
   rows.forEach((row) => {

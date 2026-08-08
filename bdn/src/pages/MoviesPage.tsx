@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Film, Search, Filter, Play, Info, Star, Calendar, Clock } from 'lucide-react';
+import { Film, Search, Ticket, Info, Calendar, Clock } from 'lucide-react';
 import { MovieCard } from '../components/MovieCard';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
@@ -9,13 +9,9 @@ import { Button } from '../components/Button';
 import { Badge } from '../components/Badge';
 import { useAsync } from '../hooks/useAsync';
 import { fetchMovies } from '../api/movies';
-import { Genre } from '../types/movie';
 import { formatDuration } from '../utils/formatters';
 
-const GENRES: (Genre | 'All')[] = ['All', 'Action', 'Sci-Fi', 'Adventure', 'Thriller', 'Drama'];
-
 export const MoviesPage: React.FC = () => {
-  const [selectedGenre, setSelectedGenre] = useState<Genre | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
   const {
@@ -24,8 +20,8 @@ export const MoviesPage: React.FC = () => {
     error,
     refetch,
   } = useAsync(
-    () => fetchMovies({ genre: selectedGenre, search: searchQuery }),
-    [selectedGenre, searchQuery]
+    () => fetchMovies({ search: searchQuery }),
+    [searchQuery]
   );
 
   // Find a featured movie for the hero banner
@@ -34,7 +30,7 @@ export const MoviesPage: React.FC = () => {
   return (
     <div className="space-y-10 pb-16">
       {/* Featured Netflix-style Hero Banner */}
-      {!loading && !error && featuredMovie && !searchQuery && selectedGenre === 'All' && (
+      {!loading && !error && featuredMovie && !searchQuery && (
         <div className="relative w-full rounded-2xl overflow-hidden bg-neutral-950 border border-neutral-800 shadow-2xl min-h-[380px] sm:min-h-[440px] flex items-end">
           {/* Banner Image Background */}
           {featuredMovie.bannerUrl ? (
@@ -60,10 +56,6 @@ export const MoviesPage: React.FC = () => {
               <Badge variant="primary" size="sm" className="bg-red-600 text-white font-bold">
                 {featuredMovie.ageRating}
               </Badge>
-              <div className="flex items-center gap-1 text-xs text-amber-400 font-mono bg-black/60 px-2 py-0.5 rounded border border-neutral-800">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span>{featuredMovie.rating.toFixed(1)}</span>
-              </div>
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-none drop-shadow-md">
@@ -90,7 +82,7 @@ export const MoviesPage: React.FC = () => {
                 <Button
                   variant="primary"
                   size="lg"
-                  icon={<Play className="w-4 h-4 fill-white" />}
+                  icon={<Ticket className="w-4 h-4" />}
                   className="shadow-xl"
                 >
                   Book Tickets
@@ -111,8 +103,8 @@ export const MoviesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Filter & Search Toolbar */}
-      <div className="bg-neutral-900/90 border border-neutral-800 p-4 rounded-xl space-y-4 md:space-y-0 md:flex md:items-center md:justify-between gap-4 shadow-xl">
+      {/* Search Toolbar */}
+      <div className="bg-neutral-900/90 border border-neutral-800 p-4 rounded-xl flex items-center justify-between gap-4 shadow-xl">
         {/* Search Input */}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -132,33 +124,13 @@ export const MoviesPage: React.FC = () => {
             </button>
           )}
         </div>
-
-        {/* Genre Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
-          <span className="text-xs font-mono text-neutral-400 flex items-center gap-1 shrink-0 mr-1">
-            <Filter className="w-3.5 h-3.5" /> Genre:
-          </span>
-          {GENRES.map((genre) => (
-            <button
-              key={genre}
-              onClick={() => setSelectedGenre(genre)}
-              className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer whitespace-nowrap ${
-                selectedGenre === genre
-                  ? 'bg-red-600 text-white font-bold shadow-md shadow-red-950/50'
-                  : 'bg-neutral-800 text-neutral-300 hover:text-white hover:bg-neutral-750 border border-neutral-750'
-              }`}
-            >
-              {genre}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Section Header */}
       <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
         <h2 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
           <span className="w-2 h-6 bg-red-600 rounded-full inline-block" />
-          {selectedGenre === 'All' ? 'Trending Cinema Releases' : `${selectedGenre} Movies`}
+          Trending Cinema Releases
         </h2>
         <span className="text-xs font-mono text-neutral-400">
           {movies ? `${movies.length} Title${movies.length === 1 ? '' : 's'}` : ''}
@@ -180,10 +152,9 @@ export const MoviesPage: React.FC = () => {
         <EmptyState
           icon={<Film className="w-8 h-8 text-neutral-500" />}
           title="No movies found"
-          description={`No current movies matched your search "${searchQuery || selectedGenre}".`}
-          actionLabel="Reset Search & Filters"
+          description={`No current movies matched your search "${searchQuery}".`}
+          actionLabel="Reset Search"
           onAction={() => {
-            setSelectedGenre('All');
             setSearchQuery('');
           }}
         />

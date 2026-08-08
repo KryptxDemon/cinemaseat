@@ -111,6 +111,10 @@ export const SeatsPage: React.FC = () => {
       if (prev.includes(seat.id)) {
         return prev.filter((id) => id !== seat.id);
       }
+      if (prev.length >= 4) {
+        setHoldError('Maximum 4 seats can be selected per person at a time.');
+        return prev;
+      }
       return [...prev, seat.id];
     });
   };
@@ -246,11 +250,6 @@ export const SeatsPage: React.FC = () => {
                 <span className="text-neutral-400">{formatDuration(show.durationMinutes)}</span>
               </div>
             </div>
-          </div>
-
-          <div className="text-left md:text-right text-xs text-neutral-400 border-t md:border-t-0 pt-3 md:pt-0 border-neutral-800 w-full md:w-auto">
-            <span className="text-neutral-500 block text-[10px] uppercase font-semibold">Screen Spec</span>
-            <span className="text-neutral-200 font-semibold">{show.screenInfo || show.format}</span>
           </div>
         </div>
       </div>

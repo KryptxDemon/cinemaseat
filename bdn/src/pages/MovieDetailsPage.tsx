@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, Film, Calendar, Star, Building2 } from 'lucide-react';
+import { ArrowLeft, Clock, Film, Calendar, Building2 } from 'lucide-react';
 import { fetchMovieById } from '../api/movies';
 import { fetchShowtimesByMovieId } from '../api/showtimes';
 import { Showtime } from '../types/showtime';
@@ -124,10 +124,6 @@ export const MovieDetailsPage: React.FC = () => {
               <Badge variant="primary" size="sm" className="bg-red-600 text-white font-bold">
                 {movie.ageRating}
               </Badge>
-              <div className="flex items-center gap-1 text-xs text-amber-400 font-semibold bg-black/60 px-2.5 py-1 rounded border border-neutral-800">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span>{movie.rating.toFixed(1)}</span>
-              </div>
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">

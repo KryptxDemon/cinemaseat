@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, Film, Play, Star } from 'lucide-react';
+import { Clock, Film, Ticket } from 'lucide-react';
 import { Movie } from '../types/movie';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
 import { Button } from './Button';
@@ -19,7 +19,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
       interactive
       className="flex flex-col h-full group overflow-hidden bg-neutral-900 border-neutral-800 hover:border-red-600/50 hover:scale-[1.03] hover:z-20 transition-all duration-300 ease-out shadow-xl"
     >
-      {/* Movie Poster Area with Gradient Overlay */}
+      {/* Movie Poster Area */}
       <div className="relative aspect-[2/3] w-full overflow-hidden bg-neutral-950 flex items-center justify-center">
         {!imgError && movie.posterUrl ? (
           <img
@@ -51,17 +51,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
           <Badge variant="primary" size="sm" className="bg-red-600 text-white border-red-500/40 shadow-md font-bold">
             {movie.ageRating}
           </Badge>
-          <div className="flex items-center gap-1 bg-black/75 px-2 py-0.5 rounded text-[11px] font-mono text-amber-400 border border-neutral-800 backdrop-blur-xs">
-            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-            <span>{movie.rating.toFixed(1)}</span>
-          </div>
-        </div>
-
-        {/* Quick Play Hover Indicator */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 pointer-events-none">
-          <div className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-900/50 transform scale-75 group-hover:scale-100 transition-transform duration-300">
-            <Play className="w-6 h-6 fill-white ml-0.5" />
-          </div>
         </div>
       </div>
 
@@ -104,7 +93,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
             variant="primary"
             size="md"
             className="w-full justify-center group-hover:bg-red-600 group-hover:brightness-110"
-            icon={<Play className="w-3.5 h-3.5 fill-current" />}
+            icon={<Ticket className="w-3.5 h-3.5" />}
             iconPosition="left"
           >
             Get Tickets
