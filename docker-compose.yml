@@ -1,8 +1,97 @@
-# CinemaSeat root docker-compose.yml
+# Full CinemaSeat integration stack.
 #
-# This file is a pointer stub on the `devops` branch.
-# The full integration stack lives in devops/docker-compose.yml.
-# See BRANCHES.md for branch ownership and the merge story.
+# This is the canonical compose file owned by the `devops` branch.
+# It wires postgres + backend + gateway + frontend into a single
+# end-to-end stack. After all four branches merge into `main`, this
+# compose (or its root equivalent) is what reviewers run with
+# `docker compose up` from a clean clone.
 #
-# To run the full local stack from this branch:
-#   docker compose -f devops/docker-compose.yml up
+# Service ownership:
+#   - postgres  : devops (this file)
+#   - backend   : backend branch (FastAPI)
+#   - gateway   : devops (mock-gateway for now, swaps for real later)
+#   - frontend  : frontend branch (React + Vite SPA in bdn/)
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: cinemaseat
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cinemaseat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: cinemaseat/backend:latest
+    container_name: cinemaseat-backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/cinemaseat
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2).status == 200 else 1)\""]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    restart: unless-stopped
+
+  gateway:
+    image: asifmahmoud414/mock-gateway:latest
+    container_name: cinemaseat-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      # In the integration stack the backend is reachable by service
+      # name on the default compose network.
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../bdn
+      dockerfile: Dockerfile
+      args:
+        # In-container the SPA talks to the gateway over the compose
+        # network, so use the service name (not localhost).
+        VITE_API_URL: http://gateway:8080
+    image: cinemaseat/frontend:latest
+    container_name: cinemaseat-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
